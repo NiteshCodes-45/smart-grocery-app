@@ -1,20 +1,39 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StatusBar } from "expo-status-bar";
+import { NavigationContainer } from "@react-navigation/native";
+import { StyleSheet, ImageBackground } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { GroceryContextProvider } from "./store/grocery-context";
+import RootNavigation from "./screens/RootNavigation";
 
 export default function App() {
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <>
+    <StatusBar style="dark" />
+    <SafeAreaProvider>
+      <ImageBackground
+        source={require("./assets/images/GroceryBg.jpg")}
+        resizeMode="cover"
+        style={styles.mainContainer}
+        imageStyle={{ opacity: 0.25 }}
+      >
+        <GroceryContextProvider>
+          <NavigationContainer>
+            <RootNavigation />
+          </NavigationContainer>
+        </GroceryContextProvider>
+      </ImageBackground>
+    </SafeAreaProvider>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  mainContainer: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#8ba183ff",
   },
+  person:{
+    marginHorizontal:10
+  }
 });
