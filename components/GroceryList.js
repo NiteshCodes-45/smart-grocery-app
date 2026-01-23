@@ -21,7 +21,7 @@ export default function GroceryList({
   const { theme } = useTheme();
   const [category, setCategory] = useState('');
   const [openDropdown, setOpenDropdown] = useState(null);
-  const { removeGroceryItem, addToBroughtItem } = useGrocery();
+  const { removeGroceryItem, addToBroughtItem, getBroughtItems, getToBuyItems } = useGrocery();
 
   const [filter, setFilter] = useState("all"); // "all" | "brought" | "toBuy"
 
@@ -35,11 +35,11 @@ export default function GroceryList({
     }
 
     if (filter === "brought") {
-      items = items.filter(item => item.checked === true);
+      items = getBroughtItems();
     }
 
     if (filter === "toBuy") {
-      items = items.filter(item => item.checked === false);
+      items = getToBuyItems();
     }
 
     return items;

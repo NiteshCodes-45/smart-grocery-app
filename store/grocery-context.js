@@ -24,10 +24,12 @@ export function GroceryContextProvider({ children }) {
   /* ---------- USERS ---------- */
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-
   const [groceryItems, setGroceryItems] = useState([]);
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
 
   /* =============== Load Session on app start ============== */
+
+  console.log("SESSION LOADING:", isSessionLoading);
 
   useEffect(() => {
     async function loadSession() {
@@ -38,6 +40,8 @@ export function GroceryContextProvider({ children }) {
         }
       } catch (err) {
         console.log("Failed to restore session", err);
+      } finally {
+        setIsSessionLoading(false); // 🔑 IMPORTANT
       }
     }
 
@@ -251,6 +255,7 @@ export function GroceryContextProvider({ children }) {
         loginUser,
         logoutUser,
         isAuthenticated: !!currentUser,
+        isSessionLoading,
 
         /* profile */
         updateProfile,
