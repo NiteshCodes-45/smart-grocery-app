@@ -1,115 +1,219 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 
+/* ===================== CONSTANTS ===================== */
+
 const GroceryContext = createContext(null);
+const USERS_KEY = "APP_USERS";
+
+function getStorageKey(email) {
+  return `GROCERY_ITEMS_${encodeURIComponent(email.toLowerCase())}`;
+}
+
+/* ===================== PROVIDER ===================== */
 
 export function GroceryContextProvider({ children }) {
+  //   { id: "g1", name: "Milk", qty: 2, category: "Dairy", checked: false },
+  //   { id: "g2", name: "Bread", qty: 1, category: "General", checked: false },
+  //   { id: "g3", name: "Apples", qty: 6, category: "Fruits", checked: true },
+  //   { id: "g4", name: "Carrots", qty: 4, category: "Vegetables", checked: false },
+  //   { id: "g5", name: "Chips", qty: 3, category: "Snacks", checked: true },
 
-  const [groceryItems, setGroceryItems] = useState([
-    { id: "g1", name: "Milk", qty: 2, category: "Dairy", checked: false },
-    { id: "g2", name: "Bread", qty: 1, category: "General", checked: false },
-    { id: "g3", name: "Apples", qty: 6, category: "Fruits", checked: true },
-    { id: "g4", name: "Carrots", qty: 4, category: "Vegetables", checked: false },
-    { id: "g5", name: "Chips", qty: 3, category: "Snacks", checked: true },
-  ]);
-
-  const [users, setUsers] = useState([
-    { id: "p1", name: "Nitesh", email: "nitesh@gmail.com", location: "Pune" },
-  ]);
-
+  /* ---------- USERS ---------- */
+  const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
+  const [groceryItems, setGroceryItems] = useState([]);
+
+  /* ===================== LOAD USERS ===================== */
+  useEffect(() => {
+    async function loadUsers() {
+      const stored = await AsyncStorage.getItem(USERS_KEY);
+      if (stored) {
+        setUsers(JSON.parse(stored));
+      }
+    }
+    loadUsers();
+  }, []);
+
+  /* ===================== SAVE USERS ===================== */
+  useEffect(() => {
+    AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }, [users]);
+
+  /* ===================== LOAD GROCERIES (PER USER) ===================== */
+  useEffect(() => {
+    async function loadGroceries() {
+      if (!currentUser?.email) return;
+
+      const key = getStorageKey(currentUser.email);
+      const stored = await AsyncStorage.getItem(key);
+
+      setGroceryItems(stored ? JSON.parse(stored) : []);
+    }
+
+    loadGroceries();
+  }, [currentUser]);
+
+  /* ===================== SAVE GROCERIES (PER USER) ===================== */
+  useEffect(() => {
+    if (!currentUser?.email) return;
+
+    const key = getStorageKey(currentUser.email);
+
+    AsyncStorage.setItem(key, JSON.stringify(groceryItems));
+  }, [groceryItems, currentUser]);
+
+  /* ===================== AUTH ===================== */
   function signupUser({ name, email, location }) {
+    const exists = users.some(
+      (u) => u.email.toLowerCase() === email.toLowerCase(),
+    );
+
+    if (exists) {
+      return { success: false, message: "User already exists" };
+    }
+
     const newUser = {
       id: Date.now().toString(),
       name,
       email,
-      location,
+      location: location || "",
     };
 
     setUsers((prev) => [...prev, newUser]);
     setCurrentUser(newUser);
+
+    return { success: true };
   }
 
-
   function loginUser({ email }) {
-    const foundUser = users.find((user) => user.email === email);
+    const foundUser = users.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase(),
+    );
 
-    if (foundUser) {
-      Alert.alert("Success", "Login Successful!!");
-      setCurrentUser(foundUser);
-      return true;
+    if (!foundUser) {
+      return { success: false, message: "User not found" };
     }
 
-    Alert.alert("Error", "Login Unsuccessful. Try again");
-    return false;
+    setCurrentUser(foundUser);
+    return { success: true };
   }
 
   function logoutUser() {
     setCurrentUser(null);
+    setGroceryItems([]); // clear in-memory only
   }
 
-  // function addUser({name, email, location}){
-  //   setUsers((currentUser) =>[
-  //     ...currentUser,
-  //     {
-  //       id: Math.random().toString(),
-  //       name,
-  //       email,
-  //       location
-  //     },
-  //   ]);
-  // }
+  /* ===================== PROFILE ===================== */
+  function updateProfile({ name, email, location }) {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === currentUser.id ? { ...user, name, email, location } : user,
+      ),
+    );
 
-  function addGroceryItem({ name, qty, category }) {
-    setGroceryItems((current) => [
-      ...current,
-      {
-        id: Math.random().toString(),
-        name,
-        qty,
-        category,
-        checked: false,
-      },
-    ]);
+    setCurrentUser((prev) => ({
+      ...prev,
+      name,
+      email,
+      location,
+    }));
+  }
+
+  /* ===================== GROCERY CRUD ===================== */
+  function addGroceryItem({
+    name,
+    qty,
+    category,
+    season,
+    priority,
+    frequency,
+  }) {
+    setGroceryItems((prev) => {
+      const exists = prev.some(
+        (item) => item.name.toLowerCase() === name.toLowerCase(),
+      );
+
+      if (exists) return prev;
+
+      return [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          name,
+          qty,
+          category,
+          season,
+          priority,
+          frequency,
+          checked: false,
+        },
+      ];
+    });
+  }
+
+  function updateGroceryItem(id, updatedItem) {
+    setGroceryItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...updatedItem } : item)),
+    );
   }
 
   function removeGroceryItem(id) {
     setGroceryItems((current) => current.filter((item) => item.id !== id));
-    Alert.alert("Success", "Grocery item removed!");
+    //Alert.alert("Success", "Grocery item removed!");
   }
 
-  function groupByCategory() {
-    return groceryItems.reduce((groups, item) => {
-      const category = item.category || "Uncategorized";
-      if (!groups[category]) {
-        groups[category] = [];
-      }
-      groups[category].push(item);
-      return groups;
-    }, {});
+  function toggleBought(id) {
+    setGroceryItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, checked: !item.checked } : item,
+      ),
+    );
   }
 
   function addToBroughtItem(id) {
     setGroceryItems((currentItems) =>
       currentItems.map((item) =>
-        item.id === id
-          ? { ...item, checked: !item.checked }
-          : item
-      )
-    )
+        item.id === id ? { ...item, checked: !item.checked } : item,
+      ),
+    );
   }
 
-  function broughtItems(){
-    setGroceryItems((current) => current.map((item) =>
-      // return only Item with checked true other not
-      item.checked ? { ...item } : item
-    ));
+  function broughtItems() {
+    setGroceryItems((current) =>
+      current.map((item) =>
+        // return only Item with checked true other not
+        item.checked ? { ...item } : item,
+      ),
+    );
   }
 
+  /* ===================== DERIVED DATA (NO STATE) ===================== */
+
+  function getBroughtItems() {
+    return groceryItems.filter((item) => item.checked);
+  }
+
+  function getToBuyItems() {
+    return groceryItems.filter((item) => !item.checked);
+  }
+
+  function groupByCategory() {
+    return groceryItems.reduce((groups, item) => {
+      const category = item.category || "Uncategorized";
+      if (!groups[category]) groups[category] = [];
+      groups[category].push(item);
+      return groups;
+    }, {});
+  }
+
+  /* ===================== PROVIDER ===================== */
   return (
     <GroceryContext.Provider
       value={{
+        /* auth */
         users,
         currentUser,
         signupUser,
@@ -117,18 +221,30 @@ export function GroceryContextProvider({ children }) {
         logoutUser,
         isAuthenticated: !!currentUser,
 
+        /* profile */
+        updateProfile,
+
+        /* groceries */
         groceryItems,
         addGroceryItem,
+        updateGroceryItem,
         removeGroceryItem,
+        toggleBought,
+
+        /* selectors */
+        getBroughtItems,
+        getToBuyItems,
+        groupByCategory,
         addToBroughtItem,
         broughtItems,
-        //groupByCategory,
       }}
     >
       {children}
     </GroceryContext.Provider>
   );
 }
+
+/* ===================== HOOK ===================== */
 
 export function useGrocery() {
   return useContext(GroceryContext);

@@ -1,10 +1,12 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Alert, StyleSheet, TextInput } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Buttons from "./Buttons";
 import CategoryDropdown from "./CategoryDrodown";
 import { useGrocery } from "../store/grocery-context";
 import PickerRow from "./settings/PickerRow";
+import InputRow from "./settings/InputRow";
+import { useTheme } from "../store/theme-context";
 
 function AddGroceryForm({
   categories,
@@ -13,28 +15,31 @@ function AddGroceryForm({
   isEditMode,
 }) {
   const [name, setName] = useState("");
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState("1");
   const [category, setCategory] = useState("General");
   const [season, setSeason] = useState("All");
   const [priority, setPriority] = useState("Medium");
   const [frequency, setFrequency] = useState("Occasionally"); 
   const [openDropdown, setOpenDropdown] = useState(null);
   const { groceryItems } = useGrocery();
+  const {theme} = useTheme();
 
   //get itemId while in edit mode
   const itemId = isEditMode ? route.params.itemId : null;
   
   useEffect(() => {
-    if (isEditMode && itemId) {
-      const itemToEdit = groceryItems.find(item => item.id === itemId);
-      if (itemToEdit) {
-        setName(itemToEdit.name);
-        setQty(itemToEdit.qty.toString());
-        setCategory(itemToEdit.category);
-        // set other fields if they exist
-      }
-    }
-  }, [isEditMode, itemId]);
+    if (!isEditMode || !itemId) return;
+
+    const itemToEdit = groceryItems.find(item => item.id === itemId);
+    if (!itemToEdit) return;
+
+    setName(itemToEdit.name);
+    setQty(itemToEdit.qty.toString());
+    setCategory(itemToEdit.category);
+    setSeason(itemToEdit.season ?? "all");
+    setPriority(itemToEdit.priority ?? "medium");
+    setFrequency(itemToEdit.frequency ?? "occasionally");
+  }, [isEditMode, itemId, groceryItems]);
   
   //season: "summer" | "winter" | "monsoon" | "all"
   const seasons = [
@@ -60,52 +65,96 @@ function AddGroceryForm({
 
   const { addGroceryItem } = useGrocery();
 
-  function addGroceryItemHandler() {
+  function saveGroceryHandler() {
     if (name.trim().length === 0) {
       Alert.alert("Invalid Input", "Please enter a grocery item name.");
       return;
     }
-    addGroceryItem({ name, qty, category });
-    setTimeout(() => {
-      isEditMode ? Alert.alert("Success", "Grocery updated!!", [
-        { text: "OK", onPress: () => navigation.goBack() }
-      ]) :
-      Alert.alert("Success", "Grocery added!!", [
-        { text: "OK", onPress: () => navigation.goBack() }
+
+    const groceryData = {
+      name: name.trim(),
+      qty: Number(qty),
+      category,
+      season,
+      priority,
+      frequency,
+    };
+
+    if (isEditMode && itemId) {
+      updateGroceryItem(itemId, groceryData);
+      Alert.alert("Success", "Grocery updated!", [
+        { text: "OK", onPress: () => navigation.goBack() },
       ]);
-    }, 100);
-    setName("");
-    setQty(1);
-    setCategory("General");
+    } else {
+      addGroceryItem(groceryData);
+      Alert.alert("Success", "Grocery added!", [
+        { text: "OK", onPress: () => navigation.goBack() },
+      ]);
+
+      // clear only after ADD
+      setName("");
+      setQty("1");
+      setCategory("General");
+      setSeason("all");
+      setPriority("medium");
+      setFrequency("occasionally");
+    }
   }
 
   return (
     <>
       <SafeAreaProvider style={styles.centeredView}>
-        <View style={styles.addFormContainer}>
+        <View
+          style={[
+            styles.addFormContainer,
+            { backgroundColor: theme.colors.background },
+          ]}
+        >
           <View style={styles.inputContainer}>
-            <TextInput
-              style={[styles.formInput, styles.additem]}
-              placeholder="Grocery name (e.g Milk)"
-              onChangeText={(e) => setName(e)}
-              value={name}
-            />
+            <View style={styles.dropdownWrapper}>
+              <InputRow
+                label="Grocery name (e.g Milk)"
+                value={name}
+                onChangeText={setName}
+                keyboardType="text"
+              />
+              {/* <TextInput
+                style={[styles.formInput, styles.additem]}
+                placeholder="Grocery name (e.g Milk)"
+                onChangeText={(e) => setName(e)}
+                value={name}
+              /> */}
+            </View>
           </View>
           <View style={styles.inputContainer}>
-            <TextInput
-              style={[styles.formInput, styles.additem]}
-              placeholder="Number of Item"
-              maxLength={2}
-              keyboardType="number-pad"
-              autoCapitalize="none"
-              autoCorrect={false}
-              onChangeText={(e) => setQty(e)}
-              value={qty}
-            />
+            <View style={styles.dropdownWrapper}>
+              <InputRow
+                label="Number of Item"
+                value={qty}
+                onChangeText={setQty}
+                keyboardType="number-pad"
+              />
+              {/* <TextInput
+                style={[styles.formInput, styles.additem]}
+                placeholder="Number of Item"
+                maxLength={2}
+                keyboardType="number-pad"
+                autoCapitalize="none"
+                autoCorrect={false}
+                onChangeText={(e) => setQty(e)}
+                value={qty}
+              /> */}
+            </View>
           </View>
           <View style={styles.selectContainer}>
             <View style={styles.dropdownWrapper}>
-              <CategoryDropdown
+              <PickerRow
+                label="Category"
+                selectedValue={category}
+                onValueChange={setCategory}
+                items={categories}
+              />
+              {/* <CategoryDropdown
                 cats={categories}
                 initialValue={category}
                 setCategory={setCategory}
@@ -116,12 +165,18 @@ function AddGroceryForm({
                 placeholder="Select Category"
                 zIndex={3000}
                 zIndexInverse={1000}
-              />
+              /> */}
             </View>
           </View>
-          {/* <View style={styles.selectContainer}>
+          <View style={styles.selectContainer}>
             <View style={styles.dropdownWrapper}>
-              <CategoryDropdown
+              <PickerRow
+                label="Season"
+                selectedValue={season}
+                onValueChange={setSeason}
+                items={seasons}
+              />
+              {/* <CategoryDropdown
                 cats={seasons}
                 value={season}
                 setCategory={setSeason}
@@ -132,12 +187,18 @@ function AddGroceryForm({
                 placeholder="Select Season"
                 zIndex={2000}
                 zIndexInverse={2000}
-              />
+              /> */}
             </View>
-          </View> */}
-          {/* <View style={styles.selectContainer}>
+          </View>
+          <View style={styles.selectContainer}>
             <View style={styles.dropdownWrapper}>
-              <CategoryDropdown
+              <PickerRow
+                label="Priority"
+                selectedValue={priority}
+                onValueChange={setPriority}
+                items={priorities}
+              />
+              {/* <CategoryDropdown
                 cats={priorities}
                 //value={priority}
                 setCategory={setPriority}
@@ -148,12 +209,18 @@ function AddGroceryForm({
                 placeholder="Select Priority"
                 zIndex={1000}
                 zIndexInverse={3000}
-              />
+              /> */}
             </View>
-          </View> */}
-          {/* <View style={styles.selectContainer}>
+          </View>
+          <View style={styles.selectContainer}>
             <View style={styles.dropdownWrapper}>
-              <CategoryDropdown
+              <PickerRow
+                label="Frequency"
+                selectedValue={frequency}
+                onValueChange={setFrequency}
+                items={frequencies}
+              />
+              {/* <CategoryDropdown
                 cats={frequencies}
                 value={frequency}
                 setCategory={setFrequency}
@@ -164,9 +231,9 @@ function AddGroceryForm({
                 placeholder="Select Frequency"
                 zIndex={500}
                 zIndexInverse={3500}
-              />
+              /> */}
             </View>
-          </View> */}
+          </View>
           <View style={styles.buttonContainer}>
             {/* <View style={styles.button}>
                   <Buttons pressBtn={closeGroceryModal} color="#f31282">
@@ -174,15 +241,9 @@ function AddGroceryForm({
                   </Buttons>
                 </View> */}
             <View style={styles.button}>
-              {isEditMode ? (
-                <Buttons pressBtn={addGroceryItemHandler} color="#5e0acc">
-                  UPDATE GROCERY
-                </Buttons>
-              ) : (
-              <Buttons pressBtn={addGroceryItemHandler} color="#5e0acc">
-                ADD GROCERY
+              <Buttons pressBtn={saveGroceryHandler} color="#5e0acc">
+                {isEditMode ? "UPDATE GROCERY" : "ADD GROCERY"}
               </Buttons>
-              )}
             </View>
           </View>
         </View>
@@ -216,13 +277,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     gap: 10,
-    marginBottom: 15,
   },
   selectContainer: {
     flexDirection: "row",
     justifyContent: "space-evenly",
     gap: 10,
-    marginBottom: 15,
   },
   formInput: {
     borderRadius: 5,
@@ -230,9 +289,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   dropdownWrapper: {
-    flex: 1, // dropdown takes remaining space
-    justifyContent: "center",
-    alignItems: "center",
+    flex: 1,
   },
   additem: {
     flex: 2, // input takes twice the space

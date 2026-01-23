@@ -7,7 +7,7 @@ function Buttons({ children, pressBtn, btnColor }) {
         style={({ pressed }) =>
           pressed
             ? [styles.pressed, styles.buttonInnerContainer]
-            : styles.buttonInnerContainer
+            : [styles.buttonInnerContainer, btnColor && { backgroundColor: btnColor }]
         }
         onPress={pressBtn}
         android_ripple={{ color: "#c3d0beff" }}

@@ -60,19 +60,6 @@ function GroceryOverview() {
       </BottomTabs.Screen>
 
       <BottomTabs.Screen
-        name="SettingsTab"
-        options={{
-          title: "Settings",
-          tabBarLabel: "Settings",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
-          ),
-        }}
-      >
-        {(props) => <Settings />}
-      </BottomTabs.Screen>
-      
-      <BottomTabs.Screen
         name="Profile"
         options={{
           title: "Profile",
@@ -83,6 +70,19 @@ function GroceryOverview() {
         }}
       >
         {(props) => <Profile /> }
+      </BottomTabs.Screen>
+
+      <BottomTabs.Screen
+        name="SettingsTab"
+        options={{
+          title: "Settings",
+          tabBarLabel: "Settings",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="settings" size={size} color={color} />
+          ),
+        }}
+      >
+        {(props) => <Settings />}
       </BottomTabs.Screen>
     </BottomTabs.Navigator>
   );
@@ -103,7 +103,20 @@ function AppNavigator() {
         options={{ headerShown: false }}
       />
 
-      <Stack.Screen name="Edit Grocery">
+      <Stack.Screen 
+        name="Edit Grocery"
+        options={{
+          headerStyle: { backgroundColor: "#2F6F4E" },
+          headerTintColor: "#FFFFFF",
+          tabBarStyle: { backgroundColor: "#2F6F4E" },
+          tabBarActiveTintColor: "#FFFFFF",
+          tabBarInactiveTintColor: "#CFE3D6",
+          sceneContainerStyle: {
+            backgroundColor: "#F3F7F4",
+          },
+        }}
+        
+      >
         {(props) => (
           <AddGroceryForm
             {...props}
@@ -115,6 +128,7 @@ function AppNavigator() {
       <Stack.Screen
         name="AddGrocery"
         options={{
+          title:"Add Grocery",
           headerStyle: { backgroundColor: "#2F6F4E" },
           headerTintColor: "#FFFFFF",
           tabBarStyle: { backgroundColor: "#2F6F4E" },

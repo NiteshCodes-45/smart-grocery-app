@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useGrocery } from "../../store/grocery-context";
-import { Text, StyleSheet, Pressable, Animated, TextInput, View } from "react-native";
+import { Text, StyleSheet, Pressable, Animated, TextInput, View, Alert } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Signup from "./Signup";
 
@@ -41,6 +41,8 @@ function HeroSection() {
     const isLoginSuccess = loginUser({
       email: loginEmail,
     });
+    if(isLoginSuccess.success === false) Alert.alert("Error", isLoginSuccess.message);
+    if(isLoginSuccess.success === true) Alert.alert("Success", "Login Successful");
   }
 
   return (
@@ -71,7 +73,7 @@ function HeroSection() {
             style={styles.primaryBtn}
             onPress={() => toggleHero("signup")}
           >
-            <Ionicons name="log-in-outline" size={20} color="#2F6F4E" />
+            <Ionicons name="create-outline" size={20} color="#2F6F4E" />
             <Text style={styles.primaryBtnText}>Register</Text>
           </Pressable>
         </>

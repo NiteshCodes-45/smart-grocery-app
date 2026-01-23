@@ -6,6 +6,7 @@ import {
   Pressable,
 } from "react-native";
 import { useMemo, useState } from "react";
+import { useTheme } from "../store/theme-context";
 import Checkbox from "expo-checkbox";
 import Buttons from "./Buttons";
 import CategoryDropdown from "./CategoryDrodown";
@@ -17,6 +18,7 @@ export default function GroceryList({
   groceryItems,
   categories,
 }) {
+  const { theme } = useTheme();
   const [category, setCategory] = useState('');
   const [openDropdown, setOpenDropdown] = useState(null);
   const { removeGroceryItem, addToBroughtItem } = useGrocery();
@@ -84,11 +86,9 @@ export default function GroceryList({
   }
 
   function editItemHandler(id) {
-    return () => {
-      const itemToEdit = groceryItems.find(item => item.id === id);
-      if (itemToEdit) {
-        navigation.navigate("Edit Grocery", { itemId: id });
-      }
+    const itemToEdit = groceryItems.find(item => item.id === id);
+    if (itemToEdit) {
+      navigation.navigate("Edit Grocery", { itemId: id });
     }
   }
 
@@ -112,7 +112,7 @@ export default function GroceryList({
         </Text>
       </View>
 
-      <View style={styles.filterContainer}>
+      <View style={[styles.filterContainer, {backgroundColor:theme.colors.card}]}>
         <View style={styles.filterViewContainer}>
           <Buttons pressBtn={() => setFilter("all")}>All</Buttons>
           <Buttons pressBtn={() => setFilter("toBuy")}>To Buy</Buttons>
@@ -130,14 +130,14 @@ export default function GroceryList({
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <Pressable android_ripple={{ color: "#ccc" }} onPress={() => editItemHandler(item.id)}>
-              <View style={styles.individualCheckContainer}>
+              <View style={[styles.individualCheckContainer, {backgroundColor:theme.colors.card}]}>
                 <View style={styles.checkContainer}>
                   <Checkbox
                     value={item.checked}
                     onValueChange={() => selectedToggleOption(item.id)}
                     color={item.checked ? "#4CAF50" : undefined}
                   />
-                  <Text style={styles.label}>{item.label} (Qty: {item.qty})</Text>
+                  <Text style={[styles.label, {color:theme.colors.text}]}>{item.label} (Qty: {item.qty})</Text>
                 </View>
                 <Buttons pressBtn={() => handleRemove(item.id)} color="#f31282">
                   Remove
@@ -207,7 +207,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 15,
     paddingVertical: 5,
-    backgroundColor: "#c3d0beff",
     borderColor: "#afcfa3ff",
     elevation: 20,
   },

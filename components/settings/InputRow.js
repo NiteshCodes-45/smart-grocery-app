@@ -1,14 +1,17 @@
 import { View, Text, TextInput, StyleSheet } from "react-native";
+import { useTheme } from "../../store/theme-context";
 
-export default function InputRow({ label, value, onChangeText, keyboardType }) {
+export default function InputRow({ label, value, onChangeText, keyboardType, notEditable }) {
+  const {theme} = useTheme();
   return (
     <View style={styles.row}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, {color:theme.colors.text}]}>{label}</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input]}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
+        editable={notEditable}
       />
     </View>
   );

@@ -1,10 +1,12 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import { useTheme } from "../../store/theme-context";
 
 export default function PickerRow({ label, selectedValue, onValueChange, items }) {
+  const {theme} = useTheme();
   return (
     <View style={styles.row}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, {color:theme.colors.text}]}>{label}</Text>
       <View style={styles.pickerWrapper}>
         <Picker
           selectedValue={selectedValue}

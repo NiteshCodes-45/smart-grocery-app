@@ -1,4 +1,5 @@
 import { StatusBar } from "expo-status-bar";
+import { ThemeProvider } from "./store/theme-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { StyleSheet, ImageBackground } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -9,21 +10,23 @@ export default function App() {
 
   return (
     <>
-    <StatusBar style="dark" />
-    <SafeAreaProvider>
-      <ImageBackground
-        source={require("./assets/images/GroceryBg.jpg")}
-        resizeMode="cover"
-        style={styles.mainContainer}
-        imageStyle={{ opacity: 0.25 }}
-      >
-        <GroceryContextProvider>
-          <NavigationContainer>
-            <RootNavigation />
-          </NavigationContainer>
-        </GroceryContextProvider>
-      </ImageBackground>
-    </SafeAreaProvider>
+    <StatusBar style="auto" />
+    <ThemeProvider>
+      <SafeAreaProvider>
+        <ImageBackground
+          source={require("./assets/images/GroceryBg.jpg")}
+          resizeMode="cover"
+          style={styles.mainContainer}
+          imageStyle={{ opacity: 0.25 }}
+        >
+          <GroceryContextProvider>
+            <NavigationContainer>
+              <RootNavigation />
+            </NavigationContainer>
+          </GroceryContextProvider>
+        </ImageBackground>
+      </SafeAreaProvider>
+    </ThemeProvider>
     </>
   );
 }

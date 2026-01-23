@@ -1,12 +1,12 @@
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
+import { useTheme } from "../store/theme-context";
 import { useEffect } from "react";
 import { useGrocery } from "../store/grocery-context";
-import GroceryHeader from "../screens/GroceryHeader";
-import FilterGrocery from "../components/FilterGrocery";
 import GroceryList from "../components/GroceryList";
 import NotFoundItem from "../components/NotFoundItem";
 
-function Home({ navigation, categories }) {
+function Home({ categories }) {
+  const { theme } = useTheme();
   const { groceryItems } = useGrocery();
   const groceryItemsCount = groceryItems.length;
 
@@ -15,7 +15,7 @@ function Home({ navigation, categories }) {
   }, [groceryItems]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#8ba183ff" }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       {/* <GroceryHeader /> */}
       {groceryItems.length == 0 && (
         <NotFoundItem>No grocery items added yet. Please add some.</NotFoundItem>
@@ -30,12 +30,5 @@ function Home({ navigation, categories }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    backgroundColor: "#8ba183ff",
-  },
-});
 
 export default Home;

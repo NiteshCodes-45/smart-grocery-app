@@ -25,12 +25,17 @@ function Signup() {
       Alert.alert("Invalid Input", "Please enter name.");
       return;
     }
-    signupUser({
+    const signupSuccess = signupUser({
       name: userName,
       email: email,
       location: location,
     });
-    Alert.alert("Success", "User Register successfully!!");
+    if(signupSuccess.success === true){
+      Alert.alert("Success", "User Register successfully!!");
+    }
+    if(signupSuccess.success === false){
+      Alert.alert("Error", signupSuccess.message);
+    }    
     setUserName("");
     setEmail("");
     setLocation("");
@@ -49,6 +54,7 @@ function Signup() {
         value={email}
         onChangeText={setEmail}
         keyboardType="email"
+        notEditable={true}
       />
       <InputRow
         label="Location"
