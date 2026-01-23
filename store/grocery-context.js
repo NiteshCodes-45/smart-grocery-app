@@ -6,6 +6,7 @@ import { Alert } from "react-native";
 
 const GroceryContext = createContext(null);
 const USERS_KEY = "APP_USERS";
+const SESSION_KEY = "CURRENT_USER_SESSION";
 
 function getStorageKey(email) {
   return `GROCERY_ITEMS_${encodeURIComponent(email.toLowerCase())}`;
@@ -25,6 +26,23 @@ export function GroceryContextProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
 
   const [groceryItems, setGroceryItems] = useState([]);
+
+  /* =============== Load Session on app start ============== */
+
+  useEffect(() => {
+    async function loadSession() {
+      try {
+        const storedUser = await AsyncStorage.getItem(SESSION_KEY);
+        if (storedUser) {
+          setCurrentUser(JSON.parse(storedUser));
+        }
+      } catch (err) {
+        console.log("Failed to restore session", err);
+      }
+    }
+
+    loadSession();
+  }, []);
 
   /* ===================== LOAD USERS ===================== */
   useEffect(() => {
@@ -66,7 +84,7 @@ export function GroceryContextProvider({ children }) {
   }, [groceryItems, currentUser]);
 
   /* ===================== AUTH ===================== */
-  function signupUser({ name, email, location }) {
+  async function signupUser({ name, email, location }) {
     const exists = users.some(
       (u) => u.email.toLowerCase() === email.toLowerCase(),
     );
@@ -85,10 +103,15 @@ export function GroceryContextProvider({ children }) {
     setUsers((prev) => [...prev, newUser]);
     setCurrentUser(newUser);
 
+    await AsyncStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify(newUser)
+    );
+
     return { success: true };
   }
 
-  function loginUser({ email }) {
+  async function loginUser({ email }) {
     const foundUser = users.find(
       (u) => u.email.toLowerCase() === email.toLowerCase(),
     );
@@ -98,12 +121,20 @@ export function GroceryContextProvider({ children }) {
     }
 
     setCurrentUser(foundUser);
+    
+    await AsyncStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify(foundUser)
+    );
+    
     return { success: true };
   }
 
-  function logoutUser() {
+  async function logoutUser() {
     setCurrentUser(null);
     setGroceryItems([]); // clear in-memory only
+
+    await AsyncStorage.removeItem(SESSION_KEY);
   }
 
   /* ===================== PROFILE ===================== */
