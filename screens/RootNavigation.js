@@ -6,7 +6,7 @@ import { useGrocery } from "../store/grocery-context";
 export default function RootNavigation() {
   const { isSessionLoading, isAuthenticated } = useGrocery();
 
-  console.log("ROOT:", { isSessionLoading, isAuthenticated });
+  //console.log("ROOT:", { isSessionLoading, isAuthenticated });
 
   //ABSOLUTE BLOCK
   if (isSessionLoading) {

@@ -5,6 +5,7 @@ import { StyleSheet, ImageBackground } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GroceryContextProvider } from "./store/grocery-context";
 import RootNavigation from "./screens/RootNavigation";
+import { AuthProvider } from "./store/auth-context";
 
 export default function App() {
 
@@ -19,11 +20,13 @@ export default function App() {
           style={styles.mainContainer}
           imageStyle={{ opacity: 0.25 }}
         >
-          <GroceryContextProvider>
-            <NavigationContainer>
-              <RootNavigation />
-            </NavigationContainer>
-          </GroceryContextProvider>
+          <AuthProvider>
+            <GroceryContextProvider>
+              <NavigationContainer>
+                <RootNavigation />
+              </NavigationContainer>
+            </GroceryContextProvider>
+          </AuthProvider>
         </ImageBackground>
       </SafeAreaProvider>
     </ThemeProvider>

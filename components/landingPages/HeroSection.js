@@ -37,12 +37,12 @@ function HeroSection() {
     });
   }
 
-  function handleLogin() {
-    const isLoginSuccess = loginUser({
+  async function handleLogin() {
+    const isLoginSuccess = await loginUser({
       email: loginEmail,
     });
-    if(isLoginSuccess.success === false) Alert.alert("Error", isLoginSuccess.message);
-    if(isLoginSuccess.success === true) Alert.alert("Success", "Login Successful");
+    if(!isLoginSuccess.success) { Alert.alert("Error", isLoginSuccess.message); }
+    if(isLoginSuccess.success) { Alert.alert("Success", "Login Successful"); }
   }
 
   return (

@@ -20,20 +20,20 @@ function Signup() {
       );
     }
 
-  function handleSignup() {
+  async function handleSignup() {
     if (userName.trim().length === 0) {
       Alert.alert("Invalid Input", "Please enter name.");
       return;
     }
-    const signupSuccess = signupUser({
+    const signupSuccess = await signupUser({
       name: userName,
       email: email,
       location: location,
     });
-    if(signupSuccess.success === true){
+    if(signupSuccess.success){
       Alert.alert("Success", "User Register successfully!!");
     }
-    if(signupSuccess.success === false){
+    if(!signupSuccess.success){
       Alert.alert("Error", signupSuccess.message);
     }    
     setUserName("");

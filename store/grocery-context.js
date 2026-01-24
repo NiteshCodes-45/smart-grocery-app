@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Alert } from "react-native";
 
 /* ===================== CONSTANTS ===================== */
 
@@ -29,7 +28,7 @@ export function GroceryContextProvider({ children }) {
 
   /* =============== Load Session on app start ============== */
 
-  console.log("SESSION LOADING:", isSessionLoading);
+  //console.log("SESSION LOADING:", isSessionLoading);
 
   useEffect(() => {
     async function loadSession() {
@@ -119,6 +118,8 @@ export function GroceryContextProvider({ children }) {
     const foundUser = users.find(
       (u) => u.email.toLowerCase() === email.toLowerCase(),
     );
+
+    console.log("foundUser", foundUser);
 
     if (!foundUser) {
       return { success: false, message: "User not found" };
