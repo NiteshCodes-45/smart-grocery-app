@@ -6,6 +6,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GroceryContextProvider } from "./store/grocery-context";
 import RootNavigation from "./screens/RootNavigation";
 import { AuthProvider } from "./store/auth-context";
+import { SettingsProvider } from "./store/settings-context";
 
 export default function App() {
 
@@ -21,11 +22,13 @@ export default function App() {
           imageStyle={{ opacity: 0.25 }}
         >
           <AuthProvider>
-            <GroceryContextProvider>
-              <NavigationContainer>
-                <RootNavigation />
-              </NavigationContainer>
-            </GroceryContextProvider>
+            <SettingsProvider>
+              <GroceryContextProvider>
+                <NavigationContainer>
+                  <RootNavigation />
+                </NavigationContainer>
+              </GroceryContextProvider>
+            </SettingsProvider>
           </AuthProvider>
         </ImageBackground>
       </SafeAreaProvider>
