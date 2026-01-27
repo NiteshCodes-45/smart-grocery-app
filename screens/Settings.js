@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "../store/theme-context";
+import { useSettings } from "../store/settings-context";
 
 import Section from "../components/settings/Section";
 import InputRow from "../components/settings/InputRow";
@@ -9,8 +9,6 @@ import SwitchRow from "../components/settings/SwitchRow";
 import PickerRow from "../components/settings/PickerRow";
 
 /* ------------------ CONSTANTS ------------------ */
-
-const SETTINGS_KEY = "APP_SETTINGS";
 
 const categories = [
   { label: "General", value: "general" },
@@ -39,89 +37,16 @@ const currencies = [
 /* ------------------ SCREEN ------------------ */
 
 export default function Settings() {
-  /* Grocery Defaults */
-  const [defaultCategory, setDefaultCategory] = useState("general");
-  const [defaultQty, setDefaultQty] = useState("1");
-  const [showOutOfStock, setShowOutOfStock] = useState(true);
 
-  /* App Preferences */
-  const [selectedTheme, setSelectedTheme] = useState("light");
+  const { settings, updateSetting } = useSettings();
   const { themeMode, setThemeMode, theme } = useTheme();
-  const [language, setLanguage] = useState("en");
-  const [currency, setCurrency] = useState("inr");
-
-  /* Notifications */
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [reminderTime, setReminderTime] = useState("08:00 AM");
-  const [lowStockAlert, setLowStockAlert] = useState(true);
-
-  /* ------------------ LOAD SETTINGS ------------------ */
-
+  
+  /* ------------------ LOAD THEME ------------------ */
   useEffect(() => {
-    async function loadSettings() {
-      try {
-        const stored = await AsyncStorage.getItem(SETTINGS_KEY);
-        if (!stored) return;
+    if (!settings) return;
 
-        const s = JSON.parse(stored);
-
-        setDefaultCategory(s.defaultCategory ?? "general");
-        setDefaultQty(s.defaultQty ?? "1");
-        setShowOutOfStock(s.showOutOfStock ?? true);
-
-        setSelectedTheme(s.theme ?? "light");
-        setLanguage(s.language ?? "en");
-        setCurrency(s.currency ?? "inr");
-
-        setNotificationsEnabled(s.notificationsEnabled ?? true);
-        setReminderTime(s.reminderTime ?? "08:00 AM");
-        setLowStockAlert(s.lowStockAlert ?? true);
-      } catch (err) {
-        console.log("Failed to load settings", err);
-      }
-    }
-
-    loadSettings();
-  }, []);
-
-  /* ------------------ SAVE SETTINGS ------------------ */
-
-  useEffect(() => {
-    async function saveSettings() {
-      try {
-        const settings = {
-          defaultCategory,
-          defaultQty,
-          showOutOfStock,
-          selectedTheme,
-          language,
-          currency,
-          notificationsEnabled,
-          reminderTime,
-          lowStockAlert,
-        };
-
-        await AsyncStorage.setItem(
-          SETTINGS_KEY,
-          JSON.stringify(settings)
-        );
-      } catch (err) {
-        console.log("Failed to save settings", err);
-      }
-    }
-
-    saveSettings();
-  }, [
-    defaultCategory,
-    defaultQty,
-    showOutOfStock,
-    selectedTheme,
-    language,
-    currency,
-    notificationsEnabled,
-    reminderTime,
-    lowStockAlert,
-  ]);
+    setThemeMode(settings.theme);
+  }, [settings?.theme]);
 
   /* ------------------ UI ------------------ */
 
@@ -132,15 +57,15 @@ export default function Settings() {
       <Section title="Grocery Defaults">
         <PickerRow
           label="Default Category"
-          selectedValue={defaultCategory}
-          onValueChange={setDefaultCategory}
+          selectedValue={settings.defaultCategory}
+          onValueChange={(value) => updateSetting("defaultCategory", value)}
           items={categories}
         />
 
         <InputRow
           label="Default Quantity"
-          value={defaultQty}
-          onChangeText={setDefaultQty}
+          value={settings.defaultQty}
+          onChangeText={(value) => updateSetting("defaultQty", value)}
           keyboardType="numeric"
         />
 
@@ -155,22 +80,22 @@ export default function Settings() {
       <Section title="App Preferences">
         <PickerRow
           label="Theme"
-          selectedValue={themeMode}
-          onValueChange={setThemeMode}
+          selectedValue={settings.theme}
+          onValueChange={(value) => updateSetting("theme", value)}
           items={themes}
         />
 
         <PickerRow
           label="Language"
-          selectedValue={language}
-          onValueChange={setLanguage}
+          selectedValue={settings.language}
+          onValueChange={(value) => updateSetting("language", value)}
           items={languages}
         />
 
         <PickerRow
           label="Currency"
-          selectedValue={currency}
-          onValueChange={setCurrency}
+          selectedValue={settings.currency}
+          onValueChange={(value) => updateSetting("currency", value)}
           items={currencies}
         />
       </Section>
@@ -179,14 +104,14 @@ export default function Settings() {
       <Section title="Notifications">
         <SwitchRow
           label="Enable Notifications"
-          value={notificationsEnabled}
-          onValueChange={setNotificationsEnabled}
+          value={settings.notificationsEnabled}
+          onValueChange={(value) => updateSetting("notificationsEnabled", value)}
         />
 
         <InputRow
           label="Reminder Time"
-          value={reminderTime}
-          onChangeText={setReminderTime}
+          value={settings.reminderTime}
+          onChangeText={(value) => updateSetting("setReminderTime", value)}
         />
 
         {/* <SwitchRow

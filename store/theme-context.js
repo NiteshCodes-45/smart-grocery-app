@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Appearance } from "react-native";
 import { LightTheme, DarkTheme } from "../theme/themes";
+import { useSettings } from "./settings-context";
 
 const ThemeContext = createContext({
   theme: LightTheme,
@@ -9,45 +9,30 @@ const ThemeContext = createContext({
   setThemeMode: () => {},
 });
 
-const STORAGE_KEY = "APP_THEME";
-
 export function ThemeProvider({ children }) {
+  const { settings } = useSettings();
   const systemTheme = Appearance.getColorScheme();
+
   const [themeMode, setThemeMode] = useState("light");
   const [theme, setTheme] = useState(LightTheme);
 
-  /* Load saved theme */
   useEffect(() => {
-    async function loadTheme() {
-      const saved = await AsyncStorage.getItem(STORAGE_KEY);
-      const mode = saved || "light";
-      applyTheme(mode);
-    }
-    loadTheme();
-  }, []);
+    if (!settings?.theme) return;
+    setThemeMode(settings.theme);
+  }, [settings?.theme]);
 
-  function applyTheme(mode) {
-    setThemeMode(mode);
-
-    if (mode === "dark") {
+  useEffect(() => {
+    if (themeMode === "dark") {
       setTheme(DarkTheme);
-    } else if (mode === "system") {
+    } else if (themeMode === "system") {
       setTheme(systemTheme === "dark" ? DarkTheme : LightTheme);
     } else {
       setTheme(LightTheme);
     }
-
-    AsyncStorage.setItem(STORAGE_KEY, mode);
-  }
+  }, [themeMode, systemTheme]);
 
   return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        themeMode,
-        setThemeMode: applyTheme,
-      }}
-    >
+    <ThemeContext.Provider value={{ theme, themeMode, setThemeMode }}>
       {children}
     </ThemeContext.Provider>
   );

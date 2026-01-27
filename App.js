@@ -9,30 +9,30 @@ import { AuthProvider } from "./store/auth-context";
 import { SettingsProvider } from "./store/settings-context";
 
 export default function App() {
-
   return (
     <>
-    <StatusBar style="auto" />
-    <ThemeProvider>
+      <StatusBar style="auto" />
+
       <SafeAreaProvider>
-        <ImageBackground
-          source={require("./assets/images/GroceryBg.jpg")}
-          resizeMode="cover"
-          style={styles.mainContainer}
-          imageStyle={{ opacity: 0.25 }}
-        >
-          <AuthProvider>
-            <SettingsProvider>
-              <GroceryContextProvider>
-                <NavigationContainer>
-                  <RootNavigation />
-                </NavigationContainer>
-              </GroceryContextProvider>
-            </SettingsProvider>
-          </AuthProvider>
-        </ImageBackground>
+        <AuthProvider>
+          <SettingsProvider>
+            <ThemeProvider>
+              <ImageBackground
+                source={require("./assets/images/GroceryBg.jpg")}
+                resizeMode="cover"
+                style={styles.mainContainer}
+                imageStyle={{ opacity: 0.25 }}
+              >
+                <GroceryContextProvider>
+                  <NavigationContainer>
+                    <RootNavigation />
+                  </NavigationContainer>
+                </GroceryContextProvider>
+              </ImageBackground>
+            </ThemeProvider>
+          </SettingsProvider>
+        </AuthProvider>
       </SafeAreaProvider>
-    </ThemeProvider>
     </>
   );
 }
