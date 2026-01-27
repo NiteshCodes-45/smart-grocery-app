@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useGrocery } from "../../store/grocery-context";
+import { useAuth } from "../../store/auth-context";
 import { Text, StyleSheet, Pressable, Animated, TextInput, View, Alert } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Signup from "./Signup";
@@ -11,7 +11,7 @@ function HeroSection() {
   const [loginEmail, setLoginEmail] = useState('');
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  const { loginUser } = useGrocery();
+  const { loginUser } = useAuth();
 
   function Input(props) {
     return (

@@ -9,10 +9,8 @@ function Home({ categories }) {
   const { theme } = useTheme();
   const { groceryItems } = useGrocery();
   const groceryItemsCount = groceryItems.length;
-
-  useEffect(() => {
-    console.log("Home groceryItems:", groceryItems);
-  }, [groceryItems]);
+  
+  if (__DEV__) console.log("Home groceryItems:", groceryItems);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>

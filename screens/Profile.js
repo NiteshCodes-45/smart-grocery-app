@@ -1,7 +1,7 @@
 import Section from "../components/settings/Section";
 import InputRow from "../components/settings/InputRow";
 import Buttons from "../components/Buttons";
-import { useGrocery } from "../store/grocery-context";
+import { useAuth } from "../store/auth-context";
 import { useTheme } from "../store/theme-context";
 import { useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
@@ -12,7 +12,7 @@ function Profile() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState('');
     const [location, setLocation] = useState('');
-    const {updateProfile, users, currentUser, logoutUser} = useGrocery();
+    const {updateProfile, users, currentUser, logoutUser} = useAuth();
 
     const navigation = useNavigation();
     const {theme} = useTheme();

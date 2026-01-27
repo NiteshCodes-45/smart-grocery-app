@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { View, Alert, StyleSheet, TextInput } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Buttons from "./Buttons";
-import CategoryDropdown from "./CategoryDrodown";
 import { useGrocery } from "../store/grocery-context";
 import PickerRow from "./settings/PickerRow";
 import InputRow from "./settings/InputRow";
 import { useTheme } from "../store/theme-context";
+//import CategoryDropdown from "./CategoryDrodown";
 
 function AddGroceryForm({
   categories,
@@ -63,7 +63,7 @@ function AddGroceryForm({
     { label: "Occasionally", value: "occasionally" },  
   ]
 
-  const { addGroceryItem } = useGrocery();
+  const { addGroceryItem, updateGroceryItem } = useGrocery();
 
   function saveGroceryHandler() {
     if (name.trim().length === 0) {

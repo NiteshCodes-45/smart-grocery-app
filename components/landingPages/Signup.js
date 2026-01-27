@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, View, TextInput, Text, Alert } from "react-native";
-import { useGrocery } from "../../store/grocery-context";
-import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "../../store/auth-context";
 import InputRow from "../settings/InputRow";
 
 function Signup() {
@@ -9,8 +8,7 @@ function Signup() {
   const [email, setEmail] = useState('');
   const [location, setLocation] = useState('');
 
-  const { signupUser } = useGrocery();
-  const navigation = useNavigation();
+  const { signupUser } = useAuth();
 
   function Input(props) {
       return (

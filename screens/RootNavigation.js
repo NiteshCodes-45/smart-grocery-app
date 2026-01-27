@@ -1,12 +1,10 @@
 import LandingScreen from "../screens/LandingScreen";
 import AppNavigator from "../screens/AppNavigator";
 import SplashScreen from "../screens/SplashScreen";
-import { useGrocery } from "../store/grocery-context";
+import { useAuth } from "../store/auth-context";
 
 export default function RootNavigation() {
-  const { isSessionLoading, isAuthenticated } = useGrocery();
-
-  //console.log("ROOT:", { isSessionLoading, isAuthenticated });
+  const { isSessionLoading, isAuthenticated } = useAuth();
 
   //ABSOLUTE BLOCK
   if (isSessionLoading) {
