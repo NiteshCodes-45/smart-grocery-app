@@ -69,7 +69,7 @@ function Signup() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#8ba183ff",
     marginHorizontal: 16,
     padding: 16,
     borderRadius: 12,
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     justifyContent:"center",
     gap: 8,
     borderWidth:1,
-    borderColor:"#4e6d5d",
+    borderColor:"#fff",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   primaryBtnText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#2F6F4E",
+    color: "#fff",
   },
 });
 

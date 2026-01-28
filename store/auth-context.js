@@ -70,6 +70,10 @@ export function AuthProvider({ children }) {
       (u) => u.email.toLowerCase() === email.toLowerCase()
     );
 
+    if(!email){
+      return { success: false, message: "Please enter email id" };
+    }
+
     if (!foundUser) {
       return { success: false, message: "User not found" };
     }
