@@ -100,6 +100,21 @@ export function GroceryContextProvider({ children }) {
     );
   }
 
+  function updateQuantity(id, type) {
+    setGroceryItems((currentItems) =>
+      currentItems.map((item) => {
+        if (item.id !== id) return item;
+
+        const newQty =
+          type === "inc"
+            ? item.qty + 1
+            : Math.max(1, item.qty - 1);
+
+        return { ...item, qty: newQty };
+      })
+    );
+  }
+
   function broughtItems() {
     setGroceryItems((current) =>
       current.map((item) =>
@@ -136,6 +151,7 @@ export function GroceryContextProvider({ children }) {
         groceryItems,
         addGroceryItem,
         updateGroceryItem,
+        updateQuantity,
         removeGroceryItem,
         toggleBought,
 

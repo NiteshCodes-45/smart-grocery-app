@@ -1,99 +1,53 @@
 import {
-  Text,
   View,
+  Text,
   FlatList,
   StyleSheet,
   Pressable,
 } from "react-native";
 import { useMemo, useState } from "react";
-import { useTheme } from "../store/theme-context";
 import Checkbox from "expo-checkbox";
-import Buttons from "./Buttons";
-import CategoryDropdown from "./CategoryDrodown";
+import { useTheme } from "../store/theme-context";
 import { useGrocery } from "../store/grocery-context";
-import NotFoundItem from "./NotFoundItem";
+import CategoryDropdown from "../components/CategoryDrodown";
+import Buttons from "../components/Buttons";
+import NotFoundItem from "../components/NotFoundItem";
 import { useNavigation } from "@react-navigation/native";
 
-export default function GroceryList({
-  groceryItems,
-  categories,
-}) {
+export default function GroceryListScreen({ groceryItems, categories }) {
   const { theme } = useTheme();
-  const [category, setCategory] = useState('');
-  const [openDropdown, setOpenDropdown] = useState(null);
-  const { removeGroceryItem, addToBroughtItem, getBroughtItems, getToBuyItems } = useGrocery();
-
-  const [filter, setFilter] = useState("all"); // "all" | "brought" | "toBuy"
-
   const navigation = useNavigation();
+
+  const [category, setCategory] = useState("");
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [filter, setFilter] = useState("all"); // all | toBuy | brought
+
+  const {
+    removeGroceryItem,
+    addToBroughtItem,
+    getToBuyItems,
+    getBroughtItems,
+  } = useGrocery();
 
   const filteredItems = useMemo(() => {
     let items = groceryItems;
 
     if (category && category !== "All") {
-      items = items.filter(item => item.category === category);
+      items = items.filter(i => i.category === category);
     }
 
-    if (filter === "brought") {
-      items = getBroughtItems();
-    }
-
-    if (filter === "toBuy") {
-      items = getToBuyItems();
-    }
+    if (filter === "toBuy") items = getToBuyItems();
+    if (filter === "brought") items = getBroughtItems();
 
     return items;
   }, [groceryItems, category, filter]);
 
-  // const options = useMemo(() => {
-  //   const seen = new Set();
-  //   return filteredItems.filter(item => {
-  //     if (seen.has(item.name)) return false;
-  //     seen.add(item.name);
-  //     return true;
-  //   });
-  // }, [filteredItems]);
-
-  const options = useMemo(() => {
-    return filteredItems.reduce((acc, item) => {
-        if (!acc.find(opt => opt.label === item.name)) {
-          acc.push({ id: item.id, label: item.name, qty:item.qty, category:item.category, checked: item.checked });
-        }
-        return acc;
-      }, []);
-  }, [filteredItems]);
-
-  // function selectedToggleOption(id) {
-  //   addToBroughtItem(id);
-  //   setToggleOption((currentOptions) =>
-  //     currentOptions.map((option) =>
-  //       option.id === id
-  //         ? { ...option, checked: !option.checked }
-  //         : option
-  //     )
-  //   );
-  // }
-
-  function selectedToggleOption(id) {
-    addToBroughtItem(id); // context updates groceryItems
-  }
-
-  function handleRemove(itemId) {
-    const itemToRemove = options.find(item => item.id === itemId);
-    if (itemToRemove) {
-      removeGroceryItem(itemId);
-    }
-  }
-
   function editItemHandler(id) {
-    const itemToEdit = groceryItems.find(item => item.id === id);
-    if (itemToEdit) {
-      navigation.navigate("Edit Grocery", { itemId: id });
-    }
+    navigation.navigate("Edit Grocery", { itemId: id });
   }
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <View style={styles.filterCatContainer}>
         <View style={styles.dropdownWrapper}>
           <CategoryDropdown
@@ -108,80 +62,59 @@ export default function GroceryList({
           />
         </View>
         <Text style={styles.labelText}>
-          Showing {options.length} of {groceryItems.length} items
+          Showing {filteredItems.length} of {groceryItems.length} items
         </Text>
       </View>
 
-      <View style={[styles.filterContainer, {backgroundColor:theme.colors.card}]}>
-        <View style={styles.filterViewContainer}>
-          <Buttons pressBtn={() => setFilter("all")}>All</Buttons>
-          <Buttons pressBtn={() => setFilter("toBuy")}>To Buy</Buttons>
-          <Buttons pressBtn={() => setFilter("brought")}>Brought</Buttons>
-        </View>
+      <View style={[styles.filterRow, { backgroundColor: theme.colors.card }]}>
+        <Buttons pressBtn={() => setFilter("all")}>All</Buttons>
+        <Buttons pressBtn={() => setFilter("toBuy")}>To Buy</Buttons>
+        <Buttons pressBtn={() => setFilter("brought")}>Brought</Buttons>
       </View>
 
-      {options.length === 0 && (
-        <NotFoundItem>No grocery items found.</NotFoundItem>
+      {filteredItems.length === 0 && (
+        <NotFoundItem>No grocery items found</NotFoundItem>
       )}
 
-      <View style={styles.checkTopContainer}>
-        <FlatList
-          data={options}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <Pressable android_ripple={{ color: "#ccc" }} onPress={() => editItemHandler(item.id)}>
-              <View style={[styles.individualCheckContainer, {backgroundColor:theme.colors.card}]}>
-                <View style={styles.checkContainer}>
-                  <Checkbox
-                    value={item.checked}
-                    onValueChange={() => selectedToggleOption(item.id)}
-                    color={item.checked ? "#4CAF50" : undefined}
-                  />
-                  <Text style={[styles.label, {color:theme.colors.text}]}>{item.label} (Qty: {item.qty})</Text>
-                </View>
-                <Buttons pressBtn={() => handleRemove(item.id)} color="#f31282">
-                  Remove
-                </Buttons>
+      <FlatList
+        data={filteredItems}
+        keyExtractor={item => item.id}
+        contentContainerStyle={{ paddingBottom: 80 }}
+        renderItem={({ item }) => (
+          <Pressable onPress={() => editItemHandler(item.id)}>
+            <View style={[styles.item, { backgroundColor: theme.colors.card }]}>
+              <View style={styles.left}>
+                <Checkbox
+                  value={item.checked}
+                  onValueChange={() => addToBroughtItem(item.id)}
+                  color={item.checked ? "#4CAF50" : undefined}
+                />
+                <Text style={{ color: theme.colors.text }}>
+                  {item.name} (Qty: {item.qty} {item.unit ? item.unit : "pcs"})
+                </Text>
               </View>
-            </Pressable>
-          )}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 80 }}
-        />
-      </View>
-    </>
+
+              <Buttons
+                color="#f31282"
+                pressBtn={() => removeGroceryItem(item.id)}
+              >
+                Remove
+              </Buttons>
+            </View>
+          </Pressable>
+        )}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  checkTopContainer: {
-    flex: 1,
-  },
-  individualCheckContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "#fff",
-    marginTop: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginHorizontal: 25,
-    borderRadius: 5,
-  },
-  checkContainer: {
-    flexDirection: "row",
-    gap: 16,
-  },
-  label: {
-    fontSize: 13,
-  },
   filterCatContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     gap: 16,
-    paddingHorizontal: 25,
+    paddingHorizontal: 20,
     paddingVertical: 15,
   },
   dropdownWrapper: {
@@ -192,29 +125,34 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
   },
-  centeredView: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  filterTop: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
-
-  filterContainer: {
-    marginBottom: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: 24,
-    borderWidth: 1,
+  count: {
+    marginTop: 8,
+    fontSize: 12,
+    color: "#aaa",
+  },
+  filterRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    padding: 10,
+    marginHorizontal: 20,
     borderRadius: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 5,
-    borderColor: "#afcfa3ff",
-    elevation: 20,
   },
-  filterViewContainer: {
+  item: {
+    marginHorizontal: 20,
+    marginTop: 8,
+    padding: 12,
+    borderRadius: 8,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems:"center",
-    gap:16,
-    padding:10,
+    alignItems: "center",
+  },
+  left: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
   },
 });

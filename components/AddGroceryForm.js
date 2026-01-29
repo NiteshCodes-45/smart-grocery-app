@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Alert, StyleSheet, TextInput } from "react-native";
+import { View, Alert, StyleSheet, TextInput, ScrollView } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Buttons from "./Buttons";
 import { useGrocery } from "../store/grocery-context";
@@ -16,6 +16,7 @@ function AddGroceryForm({
 }) {
   const [name, setName] = useState("");
   const [qty, setQty] = useState("1");
+  const [unit, setUnit] = useState("pcs");
   const [category, setCategory] = useState("General");
   const [season, setSeason] = useState("All");
   const [priority, setPriority] = useState("Medium");
@@ -35,6 +36,7 @@ function AddGroceryForm({
 
     setName(itemToEdit.name);
     setQty(itemToEdit.qty.toString());
+    setUnit(itemToEdit.unit ?? "pcs");
     setCategory(itemToEdit.category);
     setSeason(itemToEdit.season ?? "all");
     setPriority(itemToEdit.priority ?? "medium");
@@ -49,6 +51,15 @@ function AddGroceryForm({
     { label: "Monsoon", value: "monsoon" },  
   ]
 
+  const UNITS = [
+    { label: "Kilogram (kg)", value: "kg" },
+    { label: "Gram (g)", value: "g" },
+    { label: "Litre (L)", value: "litre" },
+    { label: "Millilitre (ml)", value: "ml" },
+    { label: "Pieces (pcs)", value: "pcs" },
+    { label: "Dozen", value: "dozen" },
+  ];
+
   //priority: "high" | "medium" | "low"
   const priorities = [
     { label: "High", value: "high" },
@@ -58,6 +69,7 @@ function AddGroceryForm({
 
   //frequency: "weekly" | "monthly" | "occasionally"
   const frequencies = [
+    { label: "Daily", value: "daily" },
     { label: "Weekly", value: "weekly" },
     { label: "Monthly", value: "monthly" },
     { label: "Occasionally", value: "occasionally" },  
@@ -74,6 +86,7 @@ function AddGroceryForm({
     const groceryData = {
       name: name.trim(),
       qty: Number(qty),
+      unit,
       category,
       season,
       priority,
@@ -94,6 +107,7 @@ function AddGroceryForm({
       // clear only after ADD
       setName("");
       setQty("1");
+      setUnit("pcs");
       setCategory("General");
       setSeason("all");
       setPriority("medium");
@@ -102,7 +116,7 @@ function AddGroceryForm({
   }
 
   return (
-    <>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <SafeAreaProvider style={styles.centeredView}>
         <View
           style={[
@@ -118,12 +132,6 @@ function AddGroceryForm({
                 onChangeText={setName}
                 keyboardType="text"
               />
-              {/* <TextInput
-                style={[styles.formInput, styles.additem]}
-                placeholder="Grocery name (e.g Milk)"
-                onChangeText={(e) => setName(e)}
-                value={name}
-              /> */}
             </View>
           </View>
           <View style={styles.inputContainer}>
@@ -134,16 +142,16 @@ function AddGroceryForm({
                 onChangeText={setQty}
                 keyboardType="number-pad"
               />
-              {/* <TextInput
-                style={[styles.formInput, styles.additem]}
-                placeholder="Number of Item"
-                maxLength={2}
-                keyboardType="number-pad"
-                autoCapitalize="none"
-                autoCorrect={false}
-                onChangeText={(e) => setQty(e)}
-                value={qty}
-              /> */}
+            </View>
+          </View>
+          <View style={styles.selectContainer}>
+            <View style={styles.dropdownWrapper}>
+              <PickerRow
+                label="Unit"
+                selectedValue={unit}
+                onValueChange={setUnit}
+                items={UNITS}
+              />
             </View>
           </View>
           <View style={styles.selectContainer}>
@@ -154,18 +162,6 @@ function AddGroceryForm({
                 onValueChange={setCategory}
                 items={categories}
               />
-              {/* <CategoryDropdown
-                cats={categories}
-                initialValue={category}
-                setCategory={setCategory}
-                open={openDropdown === "category"}
-                setOpen={(isOpen) =>
-                  setOpenDropdown(isOpen ? "category" : null)
-                }
-                placeholder="Select Category"
-                zIndex={3000}
-                zIndexInverse={1000}
-              /> */}
             </View>
           </View>
           <View style={styles.selectContainer}>
@@ -176,18 +172,6 @@ function AddGroceryForm({
                 onValueChange={setSeason}
                 items={seasons}
               />
-              {/* <CategoryDropdown
-                cats={seasons}
-                value={season}
-                setCategory={setSeason}
-                open={openDropdown === "season"}
-                setOpen={(isOpen) =>
-                  setOpenDropdown(isOpen ? "season" : null)
-                }
-                placeholder="Select Season"
-                zIndex={2000}
-                zIndexInverse={2000}
-              /> */}
             </View>
           </View>
           <View style={styles.selectContainer}>
@@ -198,18 +182,6 @@ function AddGroceryForm({
                 onValueChange={setPriority}
                 items={priorities}
               />
-              {/* <CategoryDropdown
-                cats={priorities}
-                //value={priority}
-                setCategory={setPriority}
-                open={openDropdown === "priority"}
-                setOpen={(isOpen) =>
-                  setOpenDropdown(isOpen ? "priority" : null)
-                }
-                placeholder="Select Priority"
-                zIndex={1000}
-                zIndexInverse={3000}
-              /> */}
             </View>
           </View>
           <View style={styles.selectContainer}>
@@ -220,26 +192,9 @@ function AddGroceryForm({
                 onValueChange={setFrequency}
                 items={frequencies}
               />
-              {/* <CategoryDropdown
-                cats={frequencies}
-                value={frequency}
-                setCategory={setFrequency}
-                open={openDropdown === "frequency"}
-                setOpen={(isOpen) =>
-                  setOpenDropdown(isOpen ? "frequency" : null)
-                }
-                placeholder="Select Frequency"
-                zIndex={500}
-                zIndexInverse={3500}
-              /> */}
             </View>
           </View>
           <View style={styles.buttonContainer}>
-            {/* <View style={styles.button}>
-                  <Buttons pressBtn={closeGroceryModal} color="#f31282">
-                    CANCEL
-                  </Buttons>
-                </View> */}
             <View style={styles.button}>
               <Buttons pressBtn={saveGroceryHandler} color="#5e0acc">
                 {isEditMode ? "UPDATE GROCERY" : "ADD GROCERY"}
@@ -248,7 +203,7 @@ function AddGroceryForm({
           </View>
         </View>
       </SafeAreaProvider>
-    </>
+      </ScrollView>
   );
 }
 const styles = StyleSheet.create({
@@ -276,7 +231,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: 10,
+    gap: 5,
   },
   selectContainer: {
     flexDirection: "row",

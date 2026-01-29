@@ -5,6 +5,7 @@ import Settings from "../screens/Settings";
 import IconButton from "../components/UI/IconButton";
 import Profile from "../screens/Profile";
 import { useTheme } from "../store/theme-context";
+import ShoppingListScreen from "../components/ShoppingListScreen";
 
 const BottomTabs = createBottomTabNavigator();
 
@@ -55,6 +56,19 @@ export default function GroceryBottomTabs() {
         })}
       >
         {(props) => <Home {...props} categories={categories} />}
+      </BottomTabs.Screen>
+
+      <BottomTabs.Screen
+        name="ShoppingListTab"
+        options={{
+          title: "Shopping List",
+          tabBarLabel: "Shopping List",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="list" size={size} color={color} />
+          ),
+        }}
+      >
+        {(props) => <ShoppingListScreen {...props} /> }
       </BottomTabs.Screen>
 
       <BottomTabs.Screen
