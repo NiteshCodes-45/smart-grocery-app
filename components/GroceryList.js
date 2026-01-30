@@ -4,18 +4,22 @@ import {
   FlatList,
   StyleSheet,
   Pressable,
+  Alert,
 } from "react-native";
 import { useMemo, useState } from "react";
 import Checkbox from "expo-checkbox";
 import { useTheme } from "../store/theme-context";
 import { useGrocery } from "../store/grocery-context";
+import { useShopping } from "../store/shopping-context";
 import CategoryDropdown from "../components/CategoryDrodown";
 import Buttons from "../components/Buttons";
 import NotFoundItem from "../components/NotFoundItem";
 import { useNavigation } from "@react-navigation/native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function GroceryListScreen({ groceryItems, categories }) {
   const { theme } = useTheme();
+  const { addItemToSession, isItemInActiveSession } = useShopping();
   const navigation = useNavigation();
 
   const [category, setCategory] = useState("");
@@ -44,6 +48,26 @@ export default function GroceryListScreen({ groceryItems, categories }) {
 
   function editItemHandler(id) {
     navigation.navigate("Edit Grocery", { itemId: id });
+  }
+
+  function addItemToSessionHandler(item) {
+    addItemToSession(item);
+    Alert.alert("Added", `${item.name} added to shopping list ✅`);
+  }
+
+  function removeGroceryItemHandler(itemId) {
+    Alert.alert(
+      "Confirm Remove",
+      "Are you sure you want to remove this item from the grocery list?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove", 
+          style: "destructive",
+          onPress: () => removeGroceryItem(itemId),
+        },
+      ]
+    );
   }
 
   return (
@@ -78,7 +102,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
 
       <FlatList
         data={filteredItems}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 80 }}
         renderItem={({ item }) => (
           <Pressable onPress={() => editItemHandler(item.id)}>
@@ -89,17 +113,33 @@ export default function GroceryListScreen({ groceryItems, categories }) {
                   onValueChange={() => addToBroughtItem(item.id)}
                   color={item.checked ? "#4CAF50" : undefined}
                 />
-                <Text style={{ color: theme.colors.text }}>
-                  {item.name} (Qty: {item.qty} {item.unit ? item.unit : "pcs"})
-                </Text>
+                <View>
+                  <Text style={{ color: theme.colors.text }}>{item.name}</Text>
+                  <Text style={{ color: theme.colors.text }}>
+                    Qty: {item.qty} {item.unit ? item.unit : "pcs"}
+                  </Text>
+                </View>
               </View>
-
-              <Buttons
-                color="#f31282"
-                pressBtn={() => removeGroceryItem(item.id)}
-              >
-                Remove
-              </Buttons>
+              <View style={styles.shoppingBtn}>
+                <Pressable
+                  onPress={() => addItemToSessionHandler(item)}
+                  style={styles.iconBtn}
+                >
+                  <Ionicons
+                    name={isItemInActiveSession(item.id) ? "checkmark-circle" : "add-circle-outline"}
+                    size={26}
+                    color={isItemInActiveSession(item.id) ? "#4CAF50" : "#4CAF50"}
+                  />
+                  <Text style={styles.addText}>{isItemInActiveSession(item.id) ? "Added" : "Add"}</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => removeGroceryItemHandler(item.id)}
+                  style={styles.removeBtn}
+                >
+                  {/* <Text style={styles.removeText}>Remove</Text> */}
+                  <Ionicons name="trash-outline" size={20} color="#f31282" />
+                </Pressable>
+              </View>
             </View>
           </Pressable>
         )}
@@ -154,5 +194,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     alignItems: "center",
+  },
+  shoppingBtn: {
+    flexDirection: "row",    alignItems: "center",
+    gap: 25,
+  },
+  iconBtn: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  removeBtn: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  removeText: {
+    color: "#f31282",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  addText: {
+    fontSize: 12,
+    color: "#4CAF50",
+    fontWeight: "600",
   },
 });

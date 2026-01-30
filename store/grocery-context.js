@@ -46,6 +46,7 @@ export function GroceryContextProvider({ children }) {
   function addGroceryItem({
     name,
     qty,
+    unit,
     category,
     season,
     priority,
@@ -63,6 +64,7 @@ export function GroceryContextProvider({ children }) {
         {
           id: Date.now().toString(),
           name,
+          unit,
           qty,
           category,
           season,

@@ -25,8 +25,8 @@ const themes = [
 
 const languages = [
   { label: "English", value: "en" },
-  { label: "Marathi", value: "mr" },
-  { label: "Hindi", value: "hi" },
+  // { label: "Marathi", value: "mr" },
+  // { label: "Hindi", value: "hi" },
 ];
 
 const currencies = [

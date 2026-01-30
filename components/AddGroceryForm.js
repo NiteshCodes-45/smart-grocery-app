@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { View, Alert, StyleSheet, TextInput, ScrollView } from "react-native";
+import { View, Alert, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Buttons from "./Buttons";
 import { useGrocery } from "../store/grocery-context";
+import { useSettings } from "../store/settings-context";
 import PickerRow from "./settings/PickerRow";
 import InputRow from "./settings/InputRow";
 import { useTheme } from "../store/theme-context";
@@ -15,14 +16,15 @@ function AddGroceryForm({
   isEditMode,
 }) {
   const [name, setName] = useState("");
-  const [qty, setQty] = useState("1");
+  const [qty, setQty] = useState("");
   const [unit, setUnit] = useState("pcs");
-  const [category, setCategory] = useState("General");
+  const [category, setCategory] = useState("");
   const [season, setSeason] = useState("All");
   const [priority, setPriority] = useState("Medium");
   const [frequency, setFrequency] = useState("Occasionally"); 
-  const [openDropdown, setOpenDropdown] = useState(null);
+  //const [openDropdown, setOpenDropdown] = useState(null);
   const { groceryItems } = useGrocery();
+  const { settings } = useSettings();
   const {theme} = useTheme();
 
   //get itemId while in edit mode
@@ -138,7 +140,7 @@ function AddGroceryForm({
             <View style={styles.dropdownWrapper}>
               <InputRow
                 label="Number of Item"
-                value={qty}
+                value={qty ? qty.toString() : settings.defaultQty}
                 onChangeText={setQty}
                 keyboardType="number-pad"
               />
@@ -158,7 +160,7 @@ function AddGroceryForm({
             <View style={styles.dropdownWrapper}>
               <PickerRow
                 label="Category"
-                selectedValue={category}
+                selectedValue={category ? category : settings.defaultCategory}
                 onValueChange={setCategory}
                 items={categories}
               />
@@ -217,7 +219,8 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     backgroundColor: "#c3d0beff",
     paddingHorizontal: 35,
-    paddingVertical: 25,
+    paddingTop: 20,
+    paddingBottom: 65,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {

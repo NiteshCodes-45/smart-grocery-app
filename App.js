@@ -7,6 +7,7 @@ import { GroceryContextProvider } from "./store/grocery-context";
 import RootNavigation from "./screens/RootNavigation";
 import { AuthProvider } from "./store/auth-context";
 import { SettingsProvider } from "./store/settings-context";
+import { ShoppingProvider } from "./store/shopping-context";
 
 function NavigationWrapper() {
   const { themeMode, theme } = useTheme();
@@ -50,7 +51,9 @@ export default function App() {
                 imageStyle={{ opacity: 0.25 }}
               >
                 <GroceryContextProvider>
-                  <NavigationWrapper />
+                  <ShoppingProvider>
+                    <NavigationWrapper />
+                  </ShoppingProvider>
                 </GroceryContextProvider>
               </ImageBackground>
             </ThemeProvider>
