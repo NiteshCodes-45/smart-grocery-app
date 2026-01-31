@@ -24,7 +24,6 @@ export function ShoppingProvider({ children }) {
   }
 
   // ---------- SESSION LOGIC ----------
-
   function startSession() {
     if (activeSession) return activeSession;
 
@@ -85,25 +84,19 @@ export function ShoppingProvider({ children }) {
   function updateQuantity(itemId, type) {
     setSessionItems((prev) =>
       prev.map((item) => {
-        if (item.id !== itemId) return item;
-
+        if (item.id !== itemId || item.isBought) return item;
         const newQty =
-          type === "inc"
-            ? item.qty + 1
-            : Math.max(1, item.qty - 1);
-
+          type === "inc" ? item.qty + 1 : Math.max(1, item.qty - 1);
         return { ...item, qty: newQty };
-      })
+      }),
     );
   }
 
   function updatePrice(itemId, value) {
     setSessionItems((prev) =>
       prev.map((item) =>
-        item.id === itemId
-          ? { ...item, price: value }
-          : item
-      )
+        item.id === itemId && !item.isBought ? { ...item, price: value } : item,
+      ),
     );
   }
 

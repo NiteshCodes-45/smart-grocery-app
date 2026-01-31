@@ -2,18 +2,11 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AddGroceryForm from "../components/AddGroceryForm";
 import { useTheme } from "../store/theme-context";
 import GroceryBottomTabs from "./GroceryBottomTabs";
+import { categories } from "../data/Constant";
+import SessionHistoryScreen from "./SessionHistoryScreen";
+import SessionDetailScreen from "./SessionDetailScreen";
 
 const Stack = createNativeStackNavigator();
-
-const categories = [
-  { label: "All", value: "" },
-  { label: "General", value: "general" },
-  { label: "Dairy", value: "dairy" },
-  { label: "Vegetables", value: "vegetables" },
-  { label: "Fruits", value: "fruits" },
-  { label: "Snacks", value: "snacks" },
-  { label: "Beverages", value: "beverages" },
-];
 
 function AppNavigator() {
   const { theme } = useTheme();
@@ -76,6 +69,15 @@ function AppNavigator() {
       >
         {(props) => <AddGroceryForm {...props} categories={categories} />}
       </Stack.Screen>
+      <Stack.Screen
+        name="Shopping History"
+        component={SessionHistoryScreen}
+      />
+
+      <Stack.Screen
+        name="Session Details"
+        component={SessionDetailScreen}
+      />
     </Stack.Navigator>
   );
 }

@@ -4,7 +4,7 @@ import Buttons from "../components/Buttons";
 import { useAuth } from "../store/auth-context";
 import { useTheme } from "../store/theme-context";
 import { useEffect, useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 function Profile() {
@@ -73,6 +73,13 @@ function Profile() {
         <Buttons pressBtn={saveProfileHandler} color="#5e0acc">
           Update
         </Buttons>
+      </Section>
+      <Section>
+        <Pressable onPress={() => navigation.navigate("Shopping History")}>
+          <Text style={{ color: theme.colors.primary, fontSize: 16, fontWeight: "500" }}>
+            View Shopping History
+          </Text>
+        </Pressable>
       </Section>
       <View style={styles.logoutContainer}>
         <Buttons pressBtn={logoutProfileHandler} btnColor="#f80404a8">

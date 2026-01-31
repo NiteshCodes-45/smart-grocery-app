@@ -7,6 +7,7 @@ import { useSettings } from "../store/settings-context";
 import PickerRow from "./settings/PickerRow";
 import InputRow from "./settings/InputRow";
 import { useTheme } from "../store/theme-context";
+import { seasons, UNITS, priorities, frequencies } from "../data/Constant";
 //import CategoryDropdown from "./CategoryDrodown";
 
 function AddGroceryForm({
@@ -25,7 +26,7 @@ function AddGroceryForm({
   //const [openDropdown, setOpenDropdown] = useState(null);
   const { groceryItems } = useGrocery();
   const { settings } = useSettings();
-  const {theme} = useTheme();
+  const { theme } = useTheme();
 
   //get itemId while in edit mode
   const itemId = isEditMode ? route.params.itemId : null;
@@ -45,38 +46,6 @@ function AddGroceryForm({
     setFrequency(itemToEdit.frequency ?? "occasionally");
   }, [isEditMode, itemId, groceryItems]);
   
-  //season: "summer" | "winter" | "monsoon" | "all"
-  const seasons = [
-    { label: "All", value: "all" },
-    { label: "Summer", value: "summer" },
-    { label: "Winter", value: "winter" },
-    { label: "Monsoon", value: "monsoon" },  
-  ]
-
-  const UNITS = [
-    { label: "Kilogram (kg)", value: "kg" },
-    { label: "Gram (g)", value: "g" },
-    { label: "Litre (L)", value: "litre" },
-    { label: "Millilitre (ml)", value: "ml" },
-    { label: "Pieces (pcs)", value: "pcs" },
-    { label: "Dozen", value: "dozen" },
-  ];
-
-  //priority: "high" | "medium" | "low"
-  const priorities = [
-    { label: "High", value: "high" },
-    { label: "Medium", value: "medium" },
-    { label: "Low", value: "low" },  
-  ]
-
-  //frequency: "weekly" | "monthly" | "occasionally"
-  const frequencies = [
-    { label: "Daily", value: "daily" },
-    { label: "Weekly", value: "weekly" },
-    { label: "Monthly", value: "monthly" },
-    { label: "Occasionally", value: "occasionally" },  
-  ]
-
   const { addGroceryItem, updateGroceryItem } = useGrocery();
 
   function saveGroceryHandler() {

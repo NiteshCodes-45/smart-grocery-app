@@ -10,9 +10,13 @@ import {
 import Checkbox from "expo-checkbox";
 import { useEffect } from "react";
 import { useTheme } from "../store/theme-context";
+import { useSettings } from "../store/settings-context";
 import { useShopping } from "../store/shopping-context";
+import { useGrocery } from "../store/grocery-context";
 import QuantityButtons from "../components/QuantityButtons";
 import NotFoundItem from "../components/NotFoundItem";
+import Settings from "../screens/Settings";
+import { currencies } from "../data/Constant";
 
 export default function ShoppingListScreen() {
   const { theme } = useTheme();
@@ -29,6 +33,10 @@ export default function ShoppingListScreen() {
     removeItem
   } = useShopping();
 
+  const { settings } = useSettings();
+
+  const { setGroceryBoughtStatus } = useGrocery();
+
   // Auto-start session
   useEffect(() => {
     if (!activeSession) {
@@ -41,11 +49,25 @@ export default function ShoppingListScreen() {
   const items = getActiveSessionItems();
   const total = getSessionTotal(activeSession.id);
 
-  console.log("ITEM", items);
-
   function finishShopping() {
+    if(!activeSession){
+      Alert.alert("No active session", "Please start a shopping session first.");
+      return;
+    };
+
     if (items.length === 0) {
       Alert.alert("Nothing to finish", "Your shopping list is empty");
+      return;
+    }
+
+    //Check all item are bought
+    const unboughtItems = items.filter(item => !item.isBought);
+
+    if (unboughtItems.length > 0) {
+      Alert.alert(
+        "Unbought Items",
+        `${unboughtItems.length} item(s) are still not marked as bought.`
+      );
       return;
     }
 
@@ -66,6 +88,28 @@ export default function ShoppingListScreen() {
         },
       ]
     );
+  }
+
+  function toggleBoughtHandler(itemId) {
+    const item = items.find(i => i.id === itemId);
+
+    if (!item) return;
+
+    const price = Number(item.price);
+
+    if (!price || price <= 0) {
+      Alert.alert(
+        "Price Required",
+        "Please enter a valid price before marking as bought."
+      );
+      return;
+    }
+
+    // 1️⃣ Update shopping session item
+    toggleBought(itemId);
+
+    // 2️⃣ Update grocery master explicitly (NOT toggle)
+    setGroceryBoughtStatus(item.groceryId, true);
   }
 
   if (items.length === 0) {
@@ -89,12 +133,12 @@ export default function ShoppingListScreen() {
             <View style={styles.row}>
               <Checkbox
                 value={item.isBought}
-                onValueChange={() => toggleBought(item.id)}
+                onValueChange={() => toggleBoughtHandler(item.id)}
                 color={item.isBought ? "#4CAF50" : undefined}
               />
 
               <View style={styles.details}>
-                <Text style={[styles.name, { color: theme.colors.text }]}>
+                <Text style={[styles.name, item.isBought && { textDecorationLine: "line-through", color: "#999" }, { color: theme.colors.text }]}>
                   {item.name}
                 </Text>
                 <Text style={styles.unit}>
@@ -104,6 +148,7 @@ export default function ShoppingListScreen() {
 
               <QuantityButtons
                 qty={item.qty}
+                disabled={item.isBought}
                 onIncrease={() => updateQuantity(item.id, "inc")}
                 onDecrease={() => updateQuantity(item.id, "dec")}
               />
@@ -111,13 +156,17 @@ export default function ShoppingListScreen() {
 
             {/* Row 2 – Price */}
             <View style={styles.priceRow}>
-              <Text style={styles.currency}>₹</Text>
+              {/* ₹ */}
+              <Text style={styles.currency}>
+                { currencies.find(c => c.value === settings.currency)?.symbol || "₹" }
+              </Text>
               <TextInput
                 value={item.price}
                 onChangeText={(val) => updatePrice(item.id, val)}
                 keyboardType="numeric"
                 placeholder="Enter price"
-                style={[styles.priceInput, { color: theme.colors.text }]}
+                editable={!item.isBought}
+                style={[styles.priceInput, item.isBought && styles.priceDisabled, { color: theme.colors.text }]}
               />
               <Pressable
                 onPress={() => removeItemHandler(item.id)}
@@ -132,7 +181,7 @@ export default function ShoppingListScreen() {
 
       {/* Footer */}
       <View style={[styles.footer, { backgroundColor: theme.colors.card }]}>
-        <Text style={styles.total}>Total: ₹ {total}</Text>
+        <Text style={styles.total}>Total: { currencies.find(c => c.value === settings.currency)?.symbol || "₹" } {total}</Text>
 
         <Pressable style={styles.finishBtn} onPress={finishShopping}>
           <Text style={styles.finishText}>Finish Shopping</Text>
@@ -183,6 +232,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     paddingVertical: 2,
+  },
+  priceDisabled: {
+    opacity: 0.6,
   },
   footer: {
     position: "absolute",

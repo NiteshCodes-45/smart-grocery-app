@@ -126,6 +126,16 @@ export function GroceryContextProvider({ children }) {
     );
   }
 
+  function setGroceryBoughtStatus(groceryId, isBought) {
+    setGroceryItems(prev =>
+      prev.map(item =>
+        item.id === groceryId
+          ? { ...item, checked: isBought }
+          : item
+      )
+    );
+  }
+
   /* ===================== DERIVED DATA (NO STATE) ===================== */
 
   function getBroughtItems() {
@@ -156,6 +166,7 @@ export function GroceryContextProvider({ children }) {
         updateQuantity,
         removeGroceryItem,
         toggleBought,
+        setGroceryBoughtStatus,
 
         /* selectors */
         getBroughtItems,

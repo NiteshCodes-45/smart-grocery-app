@@ -7,32 +7,7 @@ import Section from "../components/settings/Section";
 import InputRow from "../components/settings/InputRow";
 import SwitchRow from "../components/settings/SwitchRow";
 import PickerRow from "../components/settings/PickerRow";
-
-/* ------------------ CONSTANTS ------------------ */
-
-const categories = [
-  { label: "General", value: "general" },
-  { label: "Dairy", value: "dairy" },
-  { label: "Vegetables", value: "vegetables" },
-  { label: "Fruits", value: "fruits" },
-];
-
-const themes = [
-  { label: "Light", value: "light" },
-  { label: "Dark", value: "dark" },
-  { label: "System", value: "system" },
-];
-
-const languages = [
-  { label: "English", value: "en" },
-  // { label: "Marathi", value: "mr" },
-  // { label: "Hindi", value: "hi" },
-];
-
-const currencies = [
-  { label: "INR (₹)", value: "inr" },
-  { label: "USD ($)", value: "usd" },
-];
+import { categories, themes, languages, currencies } from "../data/Constant";
 
 /* ------------------ SCREEN ------------------ */
 

@@ -93,7 +93,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
       <View style={[styles.filterRow, { backgroundColor: theme.colors.card }]}>
         <Buttons pressBtn={() => setFilter("all")}>All</Buttons>
         <Buttons pressBtn={() => setFilter("toBuy")}>To Buy</Buttons>
-        <Buttons pressBtn={() => setFilter("brought")}>Brought</Buttons>
+        <Buttons pressBtn={() => setFilter("brought")}>Bought</Buttons>
       </View>
 
       {filteredItems.length === 0 && (
@@ -130,7 +130,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
                     size={26}
                     color={isItemInActiveSession(item.id) ? "#4CAF50" : "#4CAF50"}
                   />
-                  <Text style={styles.addText}>{isItemInActiveSession(item.id) ? "Added" : "Add"}</Text>
+                  <Text style={[styles.addText, {color:theme.colors.text }]}>{isItemInActiveSession(item.id) ? "Added" : "Add"}</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => removeGroceryItemHandler(item.id)}
@@ -214,7 +214,6 @@ const styles = StyleSheet.create({
   },
   addText: {
     fontSize: 12,
-    color: "#4CAF50",
     fontWeight: "600",
   },
 });
