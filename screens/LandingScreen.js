@@ -1,16 +1,16 @@
 import { useState, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import HeroSection from "../components/landingPages/HeroSection";
 
 export default function LandingScreen() {
+  const scrollRef = useRef(null);
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      ref={scrollRef}
+    >
       {/* HERO SECTION */}
       <HeroSection />
 
@@ -23,7 +23,7 @@ export default function LandingScreen() {
           text="Never forget what to buy"
         />
         <ValueItem icon="leaf-outline" text="Seasonal fruits & vegetables" />
-        <ValueItem icon="list-outline" text="Simple To Buy & Bought tracking" />
+        <ValueItem icon="list-outline" text="Simple Buy & Bought tracking" />
         <ValueItem icon="cloud-offline-outline" text="Works offline" />
       </View>
 
@@ -43,10 +43,15 @@ export default function LandingScreen() {
           desc="Eat fresh with season-based produce"
         />
 
-        <FeatureRow
+        {/* <FeatureRow
           icon="location-outline"
           title="Location Based"
           desc="Personalized to your area"
+        /> */}
+        <FeatureRow
+          title="Shopping History"
+          desc="Track your spending over time"
+          icon="time-outline"
         />
 
         <FeatureRow
@@ -61,19 +66,27 @@ export default function LandingScreen() {
         <Text style={styles.sectionTitle}>How it works</Text>
 
         <Step number="1" text="Login with your email" />
-        <Step number="2" text="Add groceries you need" />
-        <Step number="3" text="Track what you bought" />
+        <Step number="2" text="Create your shopping list" />
+        <Step number="3" text="Track purchases & history" />
       </View>
 
       {/* CTA */}
-      {/* <View style={styles.cta}>
-        <Text style={styles.ctaText}>Ready to get started?</Text>
+      <View style={styles.cta}>
+        <Text style={styles.ctaText}>Get started in seconds</Text>
 
-        <Pressable style={styles.primaryBtn} onPress={onLogin}>
-          <Ionicons name="log-in-outline" size={20} color="#2F6F4E" />
-          <Text style={styles.primaryBtnText}>Login with Email</Text>
+        {/* SCROLL TO TOP OF PAGE */}
+        <Pressable
+          style={styles.primaryBtn}
+          onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
+        >
+          <View
+            style={styles.bottomLoginBtnContent}
+          >
+            <Ionicons name="log-in-outline" size={20} color="#2F6F4E" />
+            <Text style={styles.primaryBtnText}>Login with Email</Text>
+          </View>
         </Pressable>
-      </View> */}
+      </View>
 
       {/* FOOTER */}
       <Text style={styles.footer}>Made with ❤️ for smart households</Text>
@@ -212,5 +225,14 @@ const styles = StyleSheet.create({
     marginVertical: 24,
     fontSize: 12,
     color: "#777",
+  },
+  bottomLoginBtnContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "#D8F3DC",
   },
 });

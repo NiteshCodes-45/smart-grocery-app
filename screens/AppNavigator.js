@@ -5,6 +5,7 @@ import GroceryBottomTabs from "./GroceryBottomTabs";
 import { categories } from "../data/Constant";
 import SessionHistoryScreen from "./SessionHistoryScreen";
 import SessionDetailScreen from "./SessionDetailScreen";
+import AboutSmartGrocery from "../components/settings/AboutSmartGrocery";
 
 const Stack = createNativeStackNavigator();
 
@@ -77,6 +78,10 @@ function AppNavigator() {
       <Stack.Screen
         name="Session Details"
         component={SessionDetailScreen}
+      />
+      <Stack.Screen
+        name="About"
+        component={AboutSmartGrocery}
       />
     </Stack.Navigator>
   );

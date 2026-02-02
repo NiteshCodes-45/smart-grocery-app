@@ -1,30 +1,36 @@
 {
   "expo": {
-    "name": "SmartGroceryApp",
+    "name": "Smart Grocery",
     "slug": "SmartGroceryApp",
     "version": "1.0.0",
-    "orientation": "default",
+    "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F3F7F4"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.neets.smartgrocery",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#F3F7F4"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.neets.smartgrocery"
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c6e92d96-c240-4d47-af53-7ed22b15799e"
+      }
     }
   }
 }

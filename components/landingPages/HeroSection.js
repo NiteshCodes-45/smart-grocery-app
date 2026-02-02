@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useAuth } from "../../store/auth-context";
-import { Text, StyleSheet, Pressable, Animated, TextInput, View, Alert } from "react-native";
+import { Text, StyleSheet, Pressable, Animated, TextInput, View, Alert, Image } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Signup from "./Signup";
 
@@ -47,13 +47,20 @@ function HeroSection() {
 
   return (
     <Animated.View style={[styles.hero, { opacity: fadeAnim }]}>
-      <Ionicons name="basket-outline" size={64} color="#FFFFFF" />
-      <Text style={styles.appTitle}>Smart Grocery</Text>
+      <View style={styles.hero}>
+        <Image
+          source={require("../../assets/logo.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+
+        <Text style={styles.title}>Smart Grocery</Text>
+        <Text style={styles.tagline}>
+          Shop smarter. Track better.
+        </Text>
+      </View>
       {!showLogin ? (
         <>
-          {/* MARKETING HERO */}
-          <Text style={styles.tagline}>Plan • Buy • Track</Text>
-
           <Text style={styles.heroText}>
             Manage groceries smarter, reduce waste, and save money — all in one
             place.
@@ -118,71 +125,106 @@ function HeroSection() {
 }
 
 const styles = StyleSheet.create({
-    /* HERO */
-    hero: {
-        backgroundColor: "#2F6F4E",
-        padding: 24,
-        alignItems: "center",
-    },
-    loginTitle: {
-        fontSize: 24,
-        fontWeight: "700",
-        color: "#FFFFFF",
-        marginVertical: 16,
-    },
-    inputWrapper: {
-        width: "100%",
-        backgroundColor: "#FFFFFF",
-        borderRadius: 8,
-        marginBottom: 12,
-    },
-    input: {
-        padding: 12,
-        fontSize: 16,
-    },
-    backText: {
-        marginTop: 12,
-        color: "#D8F3DC",
-    },
+  /* HERO */
+  hero: {
+    backgroundColor: "#D8F3DC",
+    paddingHorizontal: 24,
+    paddingTop: 15,
+    paddingBottom: 30,
+    alignItems: "center",
+  },
 
-    appTitle: {
-        fontSize: 32,
-        fontWeight: "700",
-        color: "#FFFFFF",
-        marginTop: 12,
-    },
-    tagline: {
-        fontSize: 16,
-        color: "#D8F3DC",
-        marginBottom: 12,
-    },
-    heroText: {
-        fontSize: 15,
-        color: "#EAF5EF",
-        textAlign: "center",
-        marginBottom: 20,
-    },
-    /* BUTTON */
-    primaryBtn: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-        backgroundColor: "#FFFFFF",
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 10,
-    },
-    primaryBtnText: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#2F6F4E",
-    },
-    orText: {
-      fontSize:20, 
-      padding: 15, 
-      fontWeight:"bold", 
-      color:"white"
-    }
+  appTitle: {
+    fontSize: 32,
+    fontWeight: "700",
+    color: "#1B4332", // dark green text
+    marginTop: 8,
+  },
+
+  tagline: {
+    fontSize: 14,
+    color: "#2F6F4E", // logo green reused
+    marginVertical: 8,
+  },
+
+  heroText: {
+    fontSize: 15,
+    color: "#555",
+    textAlign: "center",
+    marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+
+  /* LOGO */
+  logo: {
+    width: 90,
+    height: 90,
+    marginBottom: 12,
+  },
+
+  /* LOGIN */
+  loginTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#1B4332",
+    marginBottom: 25,
+  },
+
+  inputWrapper: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+
+  input: {
+    padding: 12,
+    fontSize: 16,
+    color: "#1B4332", // dark green for readability
+  },
+
+  backText: {
+    marginTop: 14,
+    color: "#2F6F4E",
+    fontSize: 14,
+  },
+
+  /* BUTTON */
+  primaryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+
+  primaryBtnText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2F6F4E", // matches logo bag
+  },
+
+  orText: {
+    fontSize: 18,
+    padding: 12,
+    fontWeight: "600",
+    color: "#444",
+  },
+
+  /* (Optional – if reused elsewhere) */
+  title: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#1B4332",
+  },
+
+  subtitle: {
+    fontSize: 14,
+    color: "#555",
+    marginTop: 4,
+  },
 });
 
 export default HeroSection;

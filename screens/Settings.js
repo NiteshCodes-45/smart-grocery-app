@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import { useEffect } from "react";
+import { ScrollView, StyleSheet, Pressable, Text, View } from "react-native";
 import { useTheme } from "../store/theme-context";
 import { useSettings } from "../store/settings-context";
+import { useNavigation } from "@react-navigation/native";
 
 import Section from "../components/settings/Section";
 import InputRow from "../components/settings/InputRow";
@@ -12,7 +13,7 @@ import { categories, themes, languages, currencies } from "../data/Constant";
 /* ------------------ SCREEN ------------------ */
 
 export default function Settings() {
-
+  const navigation = useNavigation();
   const { settings, updateSetting } = useSettings();
   const { themeMode, setThemeMode, theme } = useTheme();
   
@@ -27,7 +28,7 @@ export default function Settings() {
 
   return (
     <ScrollView style={[styles.container, {backgroundColor:theme.colors.background}]}>
-
+      <View style={{marginBottom:20}}>
       {/* Grocery Defaults */}
       <Section title="Grocery Defaults">
         <PickerRow
@@ -95,7 +96,14 @@ export default function Settings() {
           onValueChange={setLowStockAlert}
         /> */}
       </Section>
-
+      <Section title="General">
+        <Pressable style={styles.aboutSection} onPress={() => navigation.navigate("About")}>
+          <Text style={{ color: theme.colors.primary, fontSize: 16, fontWeight: "500" }}>
+            About Smart Grocery
+          </Text>
+        </Pressable>  
+      </Section>
+      </View>
     </ScrollView>
   );
 }
@@ -108,4 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F7F4",
     paddingBottom: 20,
   },
+  aboutSection:{
+    paddingVertical:5,
+  }
 });
