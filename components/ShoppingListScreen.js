@@ -30,7 +30,7 @@ export default function ShoppingListScreen() {
     toggleBought,
     completeSession,
     getSessionTotal,
-    removeItem
+    removeItem,
   } = useShopping();
 
   const { settings } = useSettings();
@@ -50,10 +50,13 @@ export default function ShoppingListScreen() {
   const total = getSessionTotal(activeSession.id);
 
   function finishShopping() {
-    if(!activeSession){
-      Alert.alert("No active session", "Please start a shopping session first.");
+    if (!activeSession) {
+      Alert.alert(
+        "No active session",
+        "Please start a shopping session first.",
+      );
       return;
-    };
+    }
 
     if (items.length === 0) {
       Alert.alert("Nothing to finish", "Your shopping list is empty");
@@ -61,12 +64,12 @@ export default function ShoppingListScreen() {
     }
 
     //Check all item are bought
-    const unboughtItems = items.filter(item => !item.isBought);
+    const unboughtItems = items.filter((item) => !item.isBought);
 
     if (unboughtItems.length > 0) {
       Alert.alert(
         "Unbought Items",
-        `${unboughtItems.length} item(s) are still not marked as bought.`
+        `${unboughtItems.length} item(s) are still not marked as bought.`,
       );
       return;
     }
@@ -86,12 +89,12 @@ export default function ShoppingListScreen() {
           style: "destructive",
           onPress: () => removeItem(itemId),
         },
-      ]
+      ],
     );
   }
 
   function toggleBoughtHandler(itemId) {
-    const item = items.find(i => i.id === itemId);
+    const item = items.find((i) => i.id === itemId);
 
     if (!item) return;
 
@@ -100,7 +103,7 @@ export default function ShoppingListScreen() {
     if (!price || price <= 0) {
       Alert.alert(
         "Price Required",
-        "Please enter a valid price before marking as bought."
+        "Please enter a valid price before marking as bought.",
       );
       return;
     }
@@ -115,8 +118,7 @@ export default function ShoppingListScreen() {
   if (items.length === 0) {
     return (
       <NotFoundItem>
-        No items added yet.  
-        Go to Grocery list and add items 🛒
+        No items added yet. Go to Grocery list and add items 🛒
       </NotFoundItem>
     );
   }
@@ -138,10 +140,19 @@ export default function ShoppingListScreen() {
               />
 
               <View style={styles.details}>
-                <Text style={[styles.name, item.isBought && { textDecorationLine: "line-through", color: "#999" }, { color: theme.colors.text }]}>
+                <Text
+                  style={[
+                    styles.name,
+                    item.isBought && {
+                      textDecorationLine: "line-through",
+                      color: "#999",
+                    },
+                    { color: theme.colors.text },
+                  ]}
+                >
                   {item.name}
                 </Text>
-                <Text style={styles.unit}>
+                <Text style={[styles.unit, { color: theme.colors.text }]}>
                   {item.qty} {item.unit}
                 </Text>
               </View>
@@ -157,8 +168,9 @@ export default function ShoppingListScreen() {
             {/* Row 2 – Price */}
             <View style={styles.priceRow}>
               {/* ₹ */}
-              <Text style={styles.currency}>
-                { currencies.find(c => c.value === settings.currency)?.symbol || "₹" }
+              <Text style={[styles.currency, { color: theme.colors.text }]}>
+                {currencies.find((c) => c.value === settings.currency)
+                  ?.symbol || "₹"}
               </Text>
               <TextInput
                 value={item.price}
@@ -166,7 +178,11 @@ export default function ShoppingListScreen() {
                 keyboardType="numeric"
                 placeholder="Enter price"
                 editable={!item.isBought}
-                style={[styles.priceInput, item.isBought && styles.priceDisabled, { color: theme.colors.text }]}
+                style={[
+                  styles.priceInput,
+                  item.isBought && styles.priceDisabled,
+                  { color: theme.colors.text },
+                ]}
               />
               <Pressable
                 onPress={() => removeItemHandler(item.id)}
@@ -181,7 +197,11 @@ export default function ShoppingListScreen() {
 
       {/* Footer */}
       <View style={[styles.footer, { backgroundColor: theme.colors.card }]}>
-        <Text style={styles.total}>Total: { currencies.find(c => c.value === settings.currency)?.symbol || "₹" } {total}</Text>
+        <Text style={[styles.total, {color: theme.colors.text}]}>
+          Total:{" "}
+          {currencies.find((c) => c.value === settings.currency)?.symbol || "₹"}{" "}
+          {total}
+        </Text>
 
         <Pressable style={styles.finishBtn} onPress={finishShopping}>
           <Text style={styles.finishText}>Finish Shopping</Text>

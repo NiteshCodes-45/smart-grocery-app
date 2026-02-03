@@ -1,4 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import { useTheme } from "../store/theme-context";
 
 export default function QuantityButtons({
   qty,
@@ -6,6 +7,7 @@ export default function QuantityButtons({
   onDecrease,
   disabled = false,
 }) {
+  const { theme } = useTheme();
   return (
     <View style={styles.container}>
       <Pressable
@@ -16,7 +18,7 @@ export default function QuantityButtons({
         <Text style={styles.text}>−</Text>
       </Pressable>
 
-      <Text style={styles.qty}>{qty}</Text>
+      <Text style={[styles.qty, {color:theme.colors.text}]}>{qty}</Text>
 
       <Pressable
         style={[styles.btn, disabled && styles.disabled]}

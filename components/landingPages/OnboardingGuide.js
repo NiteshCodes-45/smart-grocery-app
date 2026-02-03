@@ -4,7 +4,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 export default function OnboardingGuide() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to Smart Grocery 👋</Text>
+      <Text style={styles.title}>Welcome to Smart Grocery</Text>
       <Text style={styles.subtitle}>
         Let’s get you started in just a few steps
       </Text>

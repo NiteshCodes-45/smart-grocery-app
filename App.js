@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { ThemeProvider, useTheme } from "./store/theme-context";
 import { DefaultTheme, DarkTheme, NavigationContainer } from "@react-navigation/native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet, ImageBackground } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GroceryContextProvider } from "./store/grocery-context";
@@ -9,11 +10,12 @@ import { AuthProvider } from "./store/auth-context";
 import { SettingsProvider } from "./store/settings-context";
 import { ShoppingProvider } from "./store/shopping-context";
 
+let baseTheme; 
+
 function NavigationWrapper() {
   const { themeMode, theme } = useTheme();
 
-  const baseTheme =
-    themeMode === "dark" ? DarkTheme : DefaultTheme;
+  baseTheme = themeMode === "dark" ? DarkTheme : DefaultTheme;
 
   const navigationTheme = {
     ...baseTheme,
@@ -38,28 +40,29 @@ function NavigationWrapper() {
 export default function App() {
   return (
     <>
-      <StatusBar style="auto" />
-
-      <SafeAreaProvider>
-        <AuthProvider>
-          <SettingsProvider>
-            <ThemeProvider>
-              <ImageBackground
-                source={require("./assets/images/GroceryBg.jpg")}
-                resizeMode="cover"
-                style={styles.mainContainer}
-                imageStyle={{ opacity: 0.25 }}
-              >
-                <GroceryContextProvider>
-                  <ShoppingProvider>
-                    <NavigationWrapper />
-                  </ShoppingProvider>
-                </GroceryContextProvider>
-              </ImageBackground>
-            </ThemeProvider>
-          </SettingsProvider>
-        </AuthProvider>
-      </SafeAreaProvider>
+      <StatusBar style={baseTheme === DarkTheme ? "light" : "dark"} />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <AuthProvider>
+            <SettingsProvider>
+              <ThemeProvider>
+                <ImageBackground
+                  source={require("./assets/images/GroceryBg.jpg")}
+                  resizeMode="cover"
+                  style={styles.mainContainer}
+                  imageStyle={{ opacity: 0.25 }}
+                >
+                  <GroceryContextProvider>
+                    <ShoppingProvider>
+                      <NavigationWrapper />
+                    </ShoppingProvider>
+                  </GroceryContextProvider>
+                </ImageBackground>
+              </ThemeProvider>
+            </SettingsProvider>
+          </AuthProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
     </>
   );
 }

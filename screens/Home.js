@@ -1,9 +1,7 @@
 import { View } from "react-native";
 import { useTheme } from "../store/theme-context";
-import { useEffect } from "react";
 import { useGrocery } from "../store/grocery-context";
 import GroceryList from "../components/GroceryList";
-import NotFoundItem from "../components/NotFoundItem";
 import OnboardingGuide from "../components/landingPages/OnboardingGuide";
 
 function Home({ categories }) {
@@ -11,7 +9,7 @@ function Home({ categories }) {
   const { groceryItems } = useGrocery();
   const groceryItemsCount = groceryItems.length;
   
-  if (__DEV__) console.log("Home groceryItems:", groceryItems);
+  // if (__DEV__) console.log("Home groceryItems:", groceryItems);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
@@ -19,7 +17,7 @@ function Home({ categories }) {
       {groceryItems.length == 0 && (
         <>
           <OnboardingGuide />
-          <NotFoundItem>No grocery items added yet. Please add some.</NotFoundItem>
+          {/* <NotFoundItem>No grocery items added yet. Please add some.</NotFoundItem> */}
         </>
       )}
       {groceryItems.length > 0 && (

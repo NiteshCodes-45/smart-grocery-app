@@ -6,8 +6,7 @@ import {
   Pressable,
   Alert,
 } from "react-native";
-import { useMemo, useState } from "react";
-import Checkbox from "expo-checkbox";
+import { useMemo, useState, useRef } from "react";
 import { useTheme } from "../store/theme-context";
 import { useGrocery } from "../store/grocery-context";
 import { useShopping } from "../store/shopping-context";
@@ -16,6 +15,7 @@ import Buttons from "../components/Buttons";
 import NotFoundItem from "../components/NotFoundItem";
 import { useNavigation } from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { Swipeable } from "react-native-gesture-handler";
 
 export default function GroceryListScreen({ groceryItems, categories }) {
   const { theme } = useTheme();
@@ -25,10 +25,10 @@ export default function GroceryListScreen({ groceryItems, categories }) {
   const [category, setCategory] = useState("");
   const [openDropdown, setOpenDropdown] = useState(null);
   const [filter, setFilter] = useState("all"); // all | toBuy | brought
+  const swipeableRef = useRef(null);
 
   const {
     removeGroceryItem,
-    addToBroughtItem,
     getToBuyItems,
     getBroughtItems,
   } = useGrocery();
@@ -56,6 +56,13 @@ export default function GroceryListScreen({ groceryItems, categories }) {
   }
 
   function removeGroceryItemHandler(itemId) {
+    if (isItemInActiveSession(itemId)) {
+      Alert.alert(
+        "Cannot Delete",
+        "This item is used in an active shopping session."
+      );
+      return;
+    }
     Alert.alert(
       "Confirm Remove",
       "Are you sure you want to remove this item from the grocery list?",
@@ -67,6 +74,21 @@ export default function GroceryListScreen({ groceryItems, categories }) {
           onPress: () => removeGroceryItem(itemId),
         },
       ]
+    );
+  }
+
+  function renderRightActions(id) {
+    return (
+      <Pressable
+        style={styles.deleteBox}
+        onPress={() => {
+          swipeableRef?.current?.close();
+          removeGroceryItemHandler(id)
+        }}
+      >
+        <Ionicons name="trash-outline" size={24} color="#fff" />
+        <Text style={styles.deleteText}>Delete</Text>
+      </Pressable>
     );
   }
 
@@ -105,18 +127,13 @@ export default function GroceryListScreen({ groceryItems, categories }) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 80 }}
         renderItem={({ item }) => (
-          <Pressable onPress={() => editItemHandler(item.id)}>
+          <Swipeable renderRightActions={() => renderRightActions(item.id)} ref={swipeableRef} >
             <View style={[styles.item, { backgroundColor: theme.colors.card }]}>
               <View style={styles.left}>
-                <Checkbox
-                  value={item.checked}
-                  onValueChange={() => addToBroughtItem(item.id)}
-                  color={item.checked ? "#4CAF50" : undefined}
-                />
                 <View>
                   <Text style={{ color: theme.colors.text }}>{item.name}</Text>
-                  <Text style={{ color: theme.colors.text }}>
-                    Qty: {item.qty} {item.unit ? item.unit : "pcs"}
+                  <Text style={{ color: theme.colors.text, fontSize: 12, textTransform: "capitalize" }}>
+                    Qty: {item.qty} {item.unit ? item.unit : "pcs"} ~ {item.category}
                   </Text>
                 </View>
               </View>
@@ -127,21 +144,21 @@ export default function GroceryListScreen({ groceryItems, categories }) {
                 >
                   <Ionicons
                     name={isItemInActiveSession(item.id) ? "checkmark-circle" : "add-circle-outline"}
-                    size={26}
+                    size={24}
                     color={isItemInActiveSession(item.id) ? "#4CAF50" : "#4CAF50"}
                   />
                   <Text style={[styles.addText, {color:theme.colors.text }]}>{isItemInActiveSession(item.id) ? "Added" : "Add"}</Text>
                 </Pressable>
                 <Pressable
-                  onPress={() => removeGroceryItemHandler(item.id)}
-                  style={styles.removeBtn}
+                  style={styles.iconBtn}
+                  onPress={() => editItemHandler(item.id)}
                 >
-                  {/* <Text style={styles.removeText}>Remove</Text> */}
-                  <Ionicons name="trash-outline" size={20} color="#f31282" />
+                  <Ionicons name="pencil-outline" size={24} color="#4CAF50" />
+                  <Text style={[styles.addText, {color:theme.colors.text }]}>Edit</Text>
                 </Pressable>
               </View>
             </View>
-          </Pressable>
+          </Swipeable>
         )}
       />
     </View>
@@ -183,12 +200,13 @@ const styles = StyleSheet.create({
   },
   item: {
     marginHorizontal: 20,
-    marginTop: 8,
+    marginVertical: 8,
     padding: 12,
     borderRadius: 8,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    elevation: 2,
   },
   left: {
     flexDirection: "row",
@@ -215,5 +233,19 @@ const styles = StyleSheet.create({
   addText: {
     fontSize: 12,
     fontWeight: "600",
+  },
+  deleteBox: {
+    backgroundColor: "#E63946",
+    justifyContent: "center",
+    alignItems: "center",
+    width: 80,
+    marginVertical: 8,
+    marginHorizontal: 18,
+    borderRadius: 12,
+  },
+  deleteText: {
+    color: "#fff",
+    fontSize: 12,
+    marginTop: 4,
   },
 });
