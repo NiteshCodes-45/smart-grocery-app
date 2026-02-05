@@ -20,9 +20,9 @@ function AddGroceryForm({
   const [qty, setQty] = useState("");
   const [unit, setUnit] = useState("pcs");
   const [category, setCategory] = useState("");
-  const [season, setSeason] = useState("All");
-  const [priority, setPriority] = useState("Medium");
-  const [frequency, setFrequency] = useState("Occasionally"); 
+  const [season, setSeason] = useState("");
+  const [priority, setPriority] = useState("");
+  const [frequency, setFrequency] = useState(""); 
   //const [openDropdown, setOpenDropdown] = useState(null);
   const { groceryItems } = useGrocery();
   const { settings } = useSettings();
@@ -109,7 +109,7 @@ function AddGroceryForm({
             <View style={styles.dropdownWrapper}>
               <InputRow
                 label="Number of Item"
-                value={qty ? qty.toString() : settings.defaultQty}
+                value={qty}
                 onChangeText={setQty}
                 keyboardType="number-pad"
               />

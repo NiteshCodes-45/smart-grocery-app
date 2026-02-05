@@ -20,7 +20,6 @@ export default function Settings() {
   /* ------------------ LOAD THEME ------------------ */
   useEffect(() => {
     if (!settings) return;
-
     setThemeMode(settings.theme);
   }, [settings?.theme]);
 

@@ -1,55 +1,70 @@
 import Section from "../components/settings/Section";
 import InputRow from "../components/settings/InputRow";
 import Buttons from "../components/Buttons";
+import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "../store/auth-context";
 import { useTheme } from "../store/theme-context";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { db } from "../firebase/firebaseConfig";
 
 function Profile() {
-    const [userId, setUserId] = useState();
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState('');
-    const [location, setLocation] = useState('');
-    const {updateProfile, users, currentUser, logoutUser} = useAuth();
+  const [userId, setUserId] = useState();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [location, setLocation] = useState("");
+  const { currentUser, updateProfile, logoutUser } = useAuth();
 
-    const navigation = useNavigation();
-    const {theme} = useTheme();
+  const navigation = useNavigation();
+  const { theme } = useTheme();
 
-    useEffect(() => {
-        const isUerLogin = users.find((user) => user.email === currentUser.email);
-        if(isUerLogin){
-            setUserId(isUerLogin.id);
-            setName(isUerLogin.name);
-            setEmail(isUerLogin.email);
-            setLocation(isUerLogin.location);
-        }
-    }, [currentUser, users])
+  /* -------- Load profile -------- */
+  useEffect(() => {
+    if (!currentUser?.uid) {
+      Alert.alert("Session expired", "Please login again.");
+      return;
+    }
 
-    function saveProfileHandler() {
-      if (name.trim().length === 0) {
-        Alert.alert("Invalid Input", "Please enter name.");
-        return;
+    setEmail(currentUser.email || "");
+    setName(currentUser.displayName || "");
+
+    async function loadProfile() {
+      const snap = await getDoc(doc(db, "users", currentUser.uid));
+
+      if (snap.exists()) {
+        setLocation(snap.data().location || "");
       }
-
-      updateProfile({
-        name,
-        email,
-        location,
-      });
-
-      Alert.alert("Success", "Profile Updated", [
-        { text: "OK", onPress: () => navigation.goBack() },
-      ]);
     }
 
-    function logoutProfileHandler(){
-      logoutUser();
+    loadProfile();
+  }, [currentUser]);
+
+  /* -------- Save -------- */
+  async function saveProfileHandler() {
+    if (name.trim().length === 0) {
+      Alert.alert("Invalid Input", "Please enter name.");
+      return;
     }
+
+    await updateProfile({ name, location });
+
+    Alert.alert("Success", "Profile Updated", [
+      { text: "OK", onPress: () => navigation.goBack() },
+    ]);
+  }
+
+  function logoutProfileHandler() {
+    logoutUser();
+  }
 
   return (
-    <View style={[styles.profileContainer, {backgroundColor:theme.colors.background}]}>
+    <View
+      style={[
+        styles.profileContainer,
+        { backgroundColor: theme.colors.background },
+      ]}
+    >
       <Section>
         <InputRow
           label="Name"
@@ -76,7 +91,13 @@ function Profile() {
       </Section>
       <Section>
         <Pressable onPress={() => navigation.navigate("Shopping History")}>
-          <Text style={{ color: theme.colors.primary, fontSize: 16, fontWeight: "500" }}>
+          <Text
+            style={{
+              color: theme.colors.primary,
+              fontSize: 16,
+              fontWeight: "500",
+            }}
+          >
             View Shopping History
           </Text>
         </Pressable>

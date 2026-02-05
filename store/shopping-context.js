@@ -1,146 +1,205 @@
-import { createContext, useContext, useState } from "react";
-import * as Crypto from "expo-crypto";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  onSnapshot,
+  query,
+  where,
+  deleteDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 
-const ShoppingContext = createContext();
+import { useAuth } from "./auth-context";
+import { db } from "../firebase/firebaseConfig";
+
+const ShoppingContext = createContext(null);
 
 export function ShoppingProvider({ children }) {
+  const { currentUser } = useAuth();
+
   const [sessions, setSessions] = useState([]);
   const [sessionItems, setSessionItems] = useState([]);
 
-  // ---------- HELPERS ----------
+  /* ---------- ACTIVE SESSION ---------- */
 
-  const activeSession = sessions.find(
-    (s) => s.status === "ACTIVE"
+  const activeSession = useMemo(
+    () => sessions.find((s) => s.status === "ACTIVE"),
+    [sessions]
   );
 
-  function generateId() {
-    return Crypto.randomUUID();
-  }
+  /* ---------- SESSIONS LISTENER ---------- */
+  useEffect(() => {
+    if (!currentUser?.uid) {
+      setSessions([]);
+      return;
+    }
 
-  function getItemsBySession(sessionId) {
-    return sessionItems.filter(
-      (item) => item.sessionId === sessionId
+    const q = query(
+      collection(db, "users", currentUser.uid, "shoppingSessions")
     );
-  }
 
-  // ---------- SESSION LOGIC ----------
-  function startSession() {
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }));
+      setSessions(data);
+    });
+
+    return () => unsub();
+  }, [currentUser?.uid]);
+
+  /* ---------- ITEMS LISTENER ---------- */
+  useEffect(() => {
+    if (!currentUser?.uid) {
+      setSessionItems([]);
+      return;
+    }
+
+    const q = query(
+      collection(db, "users", currentUser.uid, "shoppingItems")
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }));
+      setSessionItems(data);
+    });
+
+    return () => unsub();
+  }, [currentUser?.uid]);
+
+  /* ---------- SESSION LOGIC ---------- */
+
+  async function startSession() {
     if (activeSession) return activeSession;
 
-    const newSession = {
-      id: generateId(),
-      startedAt: new Date(),
-      finishedAt: null,
-      status: "ACTIVE",
-    };
+    const ref = await addDoc(
+      collection(db, "users", currentUser.uid, "shoppingSessions"),
+      {
+        status: "ACTIVE",
+        startedAt: serverTimestamp(),
+        finishedAt: null,
+      }
+    );
 
-    setSessions((prev) => [...prev, newSession]);
-    return newSession;
+    return { id: ref.id, status: "ACTIVE" };
   }
 
-  function completeSession(sessionId) {
-    setSessions((prev) =>
-      prev.map((s) =>
-        s.id === sessionId
-          ? {
-              ...s,
-              status: "COMPLETED",
-              finishedAt: new Date(),
-            }
-          : s
-      )
+  async function completeSession(sessionId) {
+    await updateDoc(
+      doc(db, "users", currentUser.uid, "shoppingSessions", sessionId),
+      {
+        status: "COMPLETED",
+        finishedAt: serverTimestamp(),
+      }
     );
   }
 
-  // ---------- ITEM LOGIC ----------
+  /* ---------- ITEM LOGIC ---------- */
 
-  function addItemToSession(grocery) {
-    const session = activeSession || startSession();
+  async function addItemToSession(grocery) {
+    const session = activeSession || (await startSession());
 
-    // 🚨 Guard: prevent duplicates
     const exists = sessionItems.some(
-        (item) =>
+      (item) =>
         item.sessionId === session.id &&
         item.groceryId === grocery.id
     );
 
     if (exists) return;
 
-    const newItem = {
-      id: generateId(),
-      sessionId: session.id,
-      groceryId: grocery.id,
-      name: grocery.name,
-      category: grocery.category,
-      unit: grocery.unit,
-      qty: grocery.defaultQty || 1,
-      price: "",
-      isBought: false,
-    };
-
-    setSessionItems((prev) => [...prev, newItem]);
-  }
-
-  function updateQuantity(itemId, type) {
-    setSessionItems((prev) =>
-      prev.map((item) => {
-        if (item.id !== itemId || item.isBought) return item;
-        const newQty =
-          type === "inc" ? item.qty + 1 : Math.max(1, item.qty - 1);
-        return { ...item, qty: newQty };
-      }),
+    await addDoc(
+      collection(db, "users", currentUser.uid, "shoppingItems"),
+      {
+        sessionId: session.id,
+        groceryId: grocery.id,
+        name: grocery.name,
+        category: grocery.category,
+        unit: grocery.unit,
+        qty: grocery.defaultQty || 1,
+        price: "",
+        isBought: false,
+        updatedAt: serverTimestamp(),
+      }
     );
   }
 
-  function updatePrice(itemId, value) {
-    setSessionItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId && !item.isBought ? { ...item, price: value } : item,
-      ),
+  async function updateQuantity(itemId, type) {
+    const item = sessionItems.find((i) => i.id === itemId);
+    if (!item || item.isBought) return;
+
+    const newQty =
+      type === "inc" ? item.qty + 1 : Math.max(1, item.qty - 1);
+
+    await updateDoc(
+      doc(db, "users", currentUser.uid, "shoppingItems", itemId),
+      {
+        qty: newQty,
+        updatedAt: serverTimestamp(),
+      }
     );
   }
 
-  function toggleBought(itemId) {
-    setSessionItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId
-          ? { ...item, isBought: !item.isBought }
-          : item
-      )
+  async function updatePrice(itemId, value) {
+    await updateDoc(
+      doc(db, "users", currentUser.uid, "shoppingItems", itemId),
+      {
+        price: value,
+        updatedAt: serverTimestamp(),
+      }
     );
   }
 
-  function removeItem(itemId) {
-    setSessionItems((prev) =>
-      prev.filter((item) => item.id !== itemId)
+  async function toggleBought(itemId) {
+    const item = sessionItems.find((i) => i.id === itemId);
+    if (!item) return;
+
+    await updateDoc(
+      doc(db, "users", currentUser.uid, "shoppingItems", itemId),
+      {
+        isBought: !item.isBought,
+        updatedAt: serverTimestamp(),
+      }
     );
   }
 
-  // ---------- DERIVED DATA ----------
+  async function removeItem(itemId) {
+    await deleteDoc(
+      doc(db, "users", currentUser.uid, "shoppingItems", itemId)
+    );
+  }
+
+  /* ---------- DERIVED DATA ---------- */
 
   function getActiveSessionItems() {
     if (!activeSession) return [];
-    return getItemsBySession(activeSession.id);
+    return sessionItems.filter(
+      (item) =>
+        item.sessionId === activeSession.id
+    );
   }
 
   function getSessionTotal(sessionId) {
-    return getItemsBySession(sessionId).reduce(
-      (sum, item) =>
-        sum + (Number(item.price) || 0),
-      0
-    );
+    return sessionItems
+      .filter((i) => i.sessionId === sessionId)
+      .reduce((sum, item) => sum + (Number(item.price) || 0), 0);
   }
 
   function isItemInActiveSession(groceryId) {
     if (!activeSession) return false;
     return sessionItems.some(
-        (item) =>
+      (item) =>
         item.sessionId === activeSession.id &&
         item.groceryId === groceryId
     );
   }
 
-  // ---------- CONTEXT VALUE ----------
+  /* ---------- CONTEXT ---------- */
 
   return (
     <ShoppingContext.Provider

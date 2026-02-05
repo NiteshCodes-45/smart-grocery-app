@@ -1,142 +1,129 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAuth } from "./auth-context";
+import { createContext, useContext, useEffect, useState } from "react";
+import {
+  collection,
+  addDoc,
+  doc,
+  deleteDoc,
+  updateDoc,
+  onSnapshot,
+  serverTimestamp,
+  query,
+  orderBy,
+} from "firebase/firestore";
 
-/* ===================== CONSTANTS ===================== */
+import { db } from "../firebase/firebaseConfig";
+import { useAuth } from "./auth-context";
 
 const GroceryContext = createContext(null);
 
-function getStorageKey(email) {
-  return `GROCERY_ITEMS_${encodeURIComponent(email.toLowerCase())}`;
-}
-
-/* ===================== PROVIDER ===================== */
-
 export function GroceryContextProvider({ children }) {
-  const {currentUser} = useAuth();
+  const { currentUser } = useAuth();
   const [groceryItems, setGroceryItems] = useState([]);
+  const [isSyncing, setSyncing] = useState(true);
 
-  /* ===================== LOAD GROCERIES (PER USER) ===================== */
+  /* ===================== REALTIME + OFFLINE SYNC ===================== */
   useEffect(() => {
-    async function loadGroceries() {
-      if (!currentUser?.email) {
-        setGroceryItems([]);
-        return;
-      }
-
-      const key = getStorageKey(currentUser.email);
-      const stored = await AsyncStorage.getItem(key);
-
-      setGroceryItems(stored ? JSON.parse(stored) : []);
+    if (!currentUser?.uid) {
+      setGroceryItems([]);
+      return;
     }
 
-    loadGroceries();
+    const q = query(
+      collection(db, "users", currentUser.uid, "groceries"),
+      orderBy("updatedAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      { includeMetadataChanges: true },
+      (snapshot) => {
+        const items = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setGroceryItems(items);
+        setSyncing(false)
+      }
+    );
+
+    return () => unsubscribe();
+    
   }, [currentUser]);
 
-  /* ===================== SAVE GROCERIES (PER USER) ===================== */
-  useEffect(() => {
-    if (!currentUser?.email) return;
+  /* ===================== CRUD ===================== */
 
-    const key = getStorageKey(currentUser.email);
+  async function addGroceryItem(item) {
+    if (!currentUser?.uid) return;
 
-    AsyncStorage.setItem(key, JSON.stringify(groceryItems));
-  }, [groceryItems, currentUser]);
-
-  /* ===================== GROCERY CRUD ===================== */
-  function addGroceryItem({
-    name,
-    qty,
-    unit,
-    category,
-    season,
-    priority,
-    frequency,
-  }) {
-    setGroceryItems((prev) => {
-      const exists = prev.some(
-        (item) => item.name.toLowerCase() === name.toLowerCase(),
-      );
-
-      if (exists) return prev;
-
-      return [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          name,
-          unit,
-          qty,
-          category,
-          season,
-          priority,
-          frequency,
-          checked: false,
-        },
-      ];
-    });
-  }
-
-  function updateGroceryItem(id, updatedItem) {
-    setGroceryItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updatedItem } : item)),
+    await addDoc(
+      collection(db, "users", currentUser.uid, "groceries"),
+      {
+        ...item,
+        checked: false,
+        updatedAt: serverTimestamp(),
+      }
     );
   }
 
-  function removeGroceryItem(id) {
-    setGroceryItems((current) => current.filter((item) => item.id !== id));
-  }
-
-  function toggleBought(id) {
-    setGroceryItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, checked: !item.checked } : item,
-      ),
+  async function updateGroceryItem(id, updatedItem) {
+    await updateDoc(
+      doc(db, "users", currentUser.uid, "groceries", id),
+      {
+        ...updatedItem,
+        updatedAt: serverTimestamp(),
+      }
     );
   }
 
-  function addToBroughtItem(id) {
-    setGroceryItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === id ? { ...item, checked: !item.checked } : item,
-      ),
+  async function removeGroceryItem(id) {
+    await deleteDoc(
+      doc(db, "users", currentUser.uid, "groceries", id)
     );
   }
 
-  function updateQuantity(id, type) {
-    setGroceryItems((currentItems) =>
-      currentItems.map((item) => {
-        if (item.id !== id) return item;
+  async function toggleBought(id, checked) {
+    await updateDoc(
+      doc(db, "users", currentUser.uid, "groceries", id),
+      {
+        checked,
+        updatedAt: serverTimestamp(),
+      }
+    );
+  }
 
-        const newQty =
-          type === "inc"
-            ? item.qty + 1
-            : Math.max(1, item.qty - 1);
+  async function updateQuantity(id, type) {
+    const item = groceryItems.find((i) => i.id === id);
+    if (!item) return;
 
-        return { ...item, qty: newQty };
-      })
+    const newQty =
+      type === "inc" ? item.qty + 1 : Math.max(1, item.qty - 1);
+
+    await updateDoc(
+      doc(db, "users", currentUser.uid, "groceries", id),
+      {
+        qty: newQty,
+        updatedAt: serverTimestamp(),
+      }
     );
   }
 
   function broughtItems() {
-    setGroceryItems((current) =>
-      current.map((item) =>
-        // return only Item with checked true other not
-        item.checked ? { ...item } : item,
-      ),
-    );
+    return groceryItems.filter((item) => item.checked);
   }
 
   function setGroceryBoughtStatus(groceryId, isBought) {
-    setGroceryItems(prev =>
-      prev.map(item =>
-        item.id === groceryId
-          ? { ...item, checked: isBought }
-          : item
-      )
+    const item = groceryItems.find((i) => i.id === groceryId);
+    if (!item) return;
+    updateDoc(
+      doc(db, "users", currentUser.uid, "groceries", groceryId),
+      {
+        checked: isBought,
+        updatedAt: serverTimestamp(),
+      }
     );
   }
 
-  /* ===================== DERIVED DATA (NO STATE) ===================== */
+  /* ===================== DERIVED DATA ===================== */
 
   function getBroughtItems() {
     return groceryItems.filter((item) => item.checked);
@@ -156,32 +143,30 @@ export function GroceryContextProvider({ children }) {
   }
 
   /* ===================== PROVIDER ===================== */
+
   return (
     <GroceryContext.Provider
       value={{
-        /* groceries */
         groceryItems,
         addGroceryItem,
         updateGroceryItem,
         updateQuantity,
         removeGroceryItem,
         toggleBought,
-        setGroceryBoughtStatus,
 
-        /* selectors */
         getBroughtItems,
         getToBuyItems,
         groupByCategory,
-        addToBroughtItem,
         broughtItems,
+        setGroceryBoughtStatus,
+
+        isSyncing,
       }}
     >
       {children}
     </GroceryContext.Provider>
   );
 }
-
-/* ===================== HOOK ===================== */
 
 export function useGrocery() {
   return useContext(GroceryContext);

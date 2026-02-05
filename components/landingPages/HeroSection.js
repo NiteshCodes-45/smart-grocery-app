@@ -9,6 +9,7 @@ function HeroSection() {
   const [showLoginRegister, setShowLoginRegister] = useState('');
 
   const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const { loginUser } = useAuth();
@@ -40,6 +41,7 @@ function HeroSection() {
   async function handleLogin() {
     const isLoginSuccess = await loginUser({
       email: loginEmail,
+      password: loginPassword,
     });
     if(!isLoginSuccess.success) { Alert.alert("Error", isLoginSuccess.message); }
     if(isLoginSuccess.success) { Alert.alert("Success", "Login Successful"); }
@@ -99,7 +101,16 @@ function HeroSection() {
                   onChangeText={setLoginEmail}
                   style={styles.input}
                 />
-                {/* <Input placeholder="Password" secureTextEntry /> */}
+              </View>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  placeholder="Password"
+                  type="password"
+                  value={loginPassword}
+                  onChangeText={setLoginPassword}
+                  secureTextEntry={true}
+                  style={styles.input}
+                />
               </View>
 
               <Pressable style={styles.primaryBtn} onPress={handleLogin}>

@@ -24,12 +24,12 @@ export default function SessionDetailScreen({ route }) {
       renderItem={({ item }) => (
         <View style={[styles.row, { backgroundColor: theme.colors.card }]}>
           <View>
-            <Text style={styles.name}>{item.name}</Text>
+            <Text style={[styles.name, {color: theme.colors.text}]}>{item.name}</Text>
             <Text style={styles.meta}>
               {item.qty} {item.unit}
             </Text>
           </View>
-          <Text style={styles.price}>₹ {item.price}</Text>
+          <Text style={[styles.price, {color:theme.colors.text}]}>₹ {item.price}</Text>
         </View>
       )}
     />

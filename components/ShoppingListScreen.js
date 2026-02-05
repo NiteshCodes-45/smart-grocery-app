@@ -8,14 +8,13 @@ import {
   Alert,
 } from "react-native";
 import Checkbox from "expo-checkbox";
-import { useEffect } from "react";
 import { useTheme } from "../store/theme-context";
 import { useSettings } from "../store/settings-context";
 import { useShopping } from "../store/shopping-context";
 import { useGrocery } from "../store/grocery-context";
+import { useAuth } from "../store/auth-context";
 import QuantityButtons from "../components/QuantityButtons";
 import NotFoundItem from "../components/NotFoundItem";
-import Settings from "../screens/Settings";
 import { currencies } from "../data/Constant";
 
 export default function ShoppingListScreen() {
@@ -34,20 +33,54 @@ export default function ShoppingListScreen() {
   } = useShopping();
 
   const { settings } = useSettings();
-
+  const { currentUser } = useAuth();
   const { setGroceryBoughtStatus } = useGrocery();
 
-  // Auto-start session
-  useEffect(() => {
-    if (!activeSession) {
-      startSession();
-    }
-  }, []);
+  // Auth guard
+  if (!currentUser?.uid) {
+    return (
+      <NotFoundItem>
+        Session expired. Please login again.
+      </NotFoundItem>
+    );
+  }
 
-  if (!activeSession) return null;
+  if (!settings) {
+    return (
+      <NotFoundItem>
+        Loading settings…
+      </NotFoundItem>
+    );
+  }
+
+  // Waiting for Firestore
+  if (activeSession === undefined) {
+    return (
+      <NotFoundItem>
+        Initializing shopping session…
+      </NotFoundItem>
+    );
+  }
+
+  // No active session
+  if (!activeSession) {
+    return (
+      <NotFoundItem>
+        No active shopping session
+      </NotFoundItem>
+    );
+  }
 
   const items = getActiveSessionItems();
   const total = getSessionTotal(activeSession.id);
+
+  if (items.length === 0) {
+    return (
+      <NotFoundItem>
+        No items added yet. Go to Grocery list and add items 🛒
+      </NotFoundItem>
+    );
+  }
 
   function finishShopping() {
     if (!activeSession) {
@@ -75,7 +108,9 @@ export default function ShoppingListScreen() {
     }
 
     completeSession(activeSession.id);
-    Alert.alert("Done", "Shopping session completed ✅");
+    Alert.alert("Done", "Shopping session completed ✅", [
+      { text: "OK", onPress: () => startSession() }
+    ]);
   }
 
   function removeItemHandler(itemId) {
@@ -95,32 +130,25 @@ export default function ShoppingListScreen() {
 
   function toggleBoughtHandler(itemId) {
     const item = items.find((i) => i.id === itemId);
-
     if (!item) return;
 
     const price = Number(item.price);
 
-    if (!price || price <= 0) {
+    if (!item.isBought && (!price || price <= 0)) {
       Alert.alert(
         "Price Required",
-        "Please enter a valid price before marking as bought.",
+        "Please enter a valid price before marking as bought."
       );
       return;
     }
 
-    // 1️⃣ Update shopping session item
+    const newBoughtStatus = !item.isBought;
+
+    // 1️⃣ Update shopping item
     toggleBought(itemId);
 
-    // 2️⃣ Update grocery master explicitly (NOT toggle)
-    setGroceryBoughtStatus(item.groceryId, true);
-  }
-
-  if (items.length === 0) {
-    return (
-      <NotFoundItem>
-        No items added yet. Go to Grocery list and add items 🛒
-      </NotFoundItem>
-    );
+    // 2️⃣ Update grocery master accurately
+    setGroceryBoughtStatus(item.groceryId, newBoughtStatus);
   }
 
   return (

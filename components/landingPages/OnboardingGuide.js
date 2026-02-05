@@ -1,7 +1,7 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-export default function OnboardingGuide() {
+export default function OnboardingGuide({ onFinish }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Smart Grocery</Text>
@@ -26,6 +26,10 @@ export default function OnboardingGuide() {
         title="Profile & Settings"
         desc="Manage your profile, preferences and app settings anytime."
       />
+
+      <Pressable onPress={onFinish} style={{ marginTop: 20 }}>
+        <Text>Got it, let’s start</Text>
+      </Pressable>
     </View>
   );
 }

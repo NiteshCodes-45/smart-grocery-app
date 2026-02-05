@@ -3,24 +3,36 @@ import { useTheme } from "../store/theme-context";
 import { useGrocery } from "../store/grocery-context";
 import GroceryList from "../components/GroceryList";
 import OnboardingGuide from "../components/landingPages/OnboardingGuide";
+import NotFoundItem from "../components/NotFoundItem";
+import { useSettings } from "../store/settings-context";
 
 function Home({ categories }) {
   const { theme } = useTheme();
-  const { groceryItems } = useGrocery();
+  const { settings, isSettingsLoading, markOnboardingSeen } = useSettings();
+  const { groceryItems, isSyncing } = useGrocery();
   const groceryItemsCount = groceryItems.length;
   
   // if (__DEV__) console.log("Home groceryItems:", groceryItems);
 
+  const shouldShowOnboarding =
+    !isSyncing &&
+    !isSettingsLoading &&
+    settings?.hasSeenOnboarding === false &&
+    groceryItems.length === 0;
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       {/* <GroceryHeader /> */}
-      {groceryItems.length == 0 && (
+      {isSyncing && 
         <>
-          <OnboardingGuide />
-          {/* <NotFoundItem>No grocery items added yet. Please add some.</NotFoundItem> */}
+          <NotFoundItem>Loading grocery items...</NotFoundItem>
         </>
+      }
+      {shouldShowOnboarding && (
+        <OnboardingGuide onFinish={markOnboardingSeen} />
       )}
-      {groceryItems.length > 0 && (
+
+      {!isSyncing && groceryItems.length > 0 && (
         <GroceryList
           groceryItems={groceryItems}
           categories={categories}

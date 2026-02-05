@@ -10,25 +10,31 @@ const ThemeContext = createContext({
 });
 
 export function ThemeProvider({ children }) {
-  const { settings } = useSettings();
+  const settingsCtx = useSettings();
   const systemTheme = Appearance.getColorScheme();
 
   const [themeMode, setThemeMode] = useState("light");
   const [theme, setTheme] = useState(LightTheme);
 
+  // Apply user setting when it arrives
   useEffect(() => {
-    if (!settings?.theme) return;
-    setThemeMode(settings.theme);
-  }, [settings?.theme]);
-
-  useEffect(() => {
-    if (themeMode === "dark") {
-      setTheme(DarkTheme);
-    } else if (themeMode === "system") {
-      setTheme(systemTheme === "dark" ? DarkTheme : LightTheme);
-    } else {
-      setTheme(LightTheme);
+    if (settingsCtx?.settings?.theme) {
+      setThemeMode(settingsCtx.settings.theme);
     }
+  }, [settingsCtx?.settings?.theme]);
+
+  // Resolve actual theme
+  useEffect(() => {
+    let resolvedTheme = LightTheme;
+
+    if (themeMode === "dark") {
+      resolvedTheme = DarkTheme;
+    } else if (themeMode === "system") {
+      resolvedTheme =
+        systemTheme === "dark" ? DarkTheme : LightTheme;
+    }
+
+    setTheme(resolvedTheme);
   }, [themeMode, systemTheme]);
 
   return (

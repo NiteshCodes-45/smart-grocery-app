@@ -7,9 +7,12 @@ import {
   Alert,
 } from "react-native";
 import { useMemo, useState, useRef } from "react";
+
 import { useTheme } from "../store/theme-context";
+import { useNetwork } from "../store/network-context";
 import { useGrocery } from "../store/grocery-context";
 import { useShopping } from "../store/shopping-context";
+import { useAuth } from "../store/auth-context";
 import CategoryDropdown from "../components/CategoryDrodown";
 import Buttons from "../components/Buttons";
 import NotFoundItem from "../components/NotFoundItem";
@@ -19,25 +22,28 @@ import { Swipeable } from "react-native-gesture-handler";
 
 export default function GroceryListScreen({ groceryItems, categories }) {
   const { theme } = useTheme();
+  const { isOnline } = useNetwork();
+  const { removeGroceryItem, getToBuyItems, getBroughtItems, isSyncing } =
+    useGrocery();
   const { addItemToSession, isItemInActiveSession } = useShopping();
   const navigation = useNavigation();
+  const { currentUser } = useAuth();
 
   const [category, setCategory] = useState("");
   const [openDropdown, setOpenDropdown] = useState(null);
   const [filter, setFilter] = useState("all"); // all | toBuy | brought
   const swipeableRef = useRef(null);
 
-  const {
-    removeGroceryItem,
-    getToBuyItems,
-    getBroughtItems,
-  } = useGrocery();
+  console.log(currentUser);
+  if (!currentUser?.uid) {
+    return <NotFoundItem>Session expired. Please login again.</NotFoundItem>;
+  }
 
   const filteredItems = useMemo(() => {
     let items = groceryItems;
 
     if (category && category !== "All") {
-      items = items.filter(i => i.category === category);
+      items = items.filter((i) => i.category === category);
     }
 
     if (filter === "toBuy") items = getToBuyItems();
@@ -59,7 +65,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
     if (isItemInActiveSession(itemId)) {
       Alert.alert(
         "Cannot Delete",
-        "This item is used in an active shopping session."
+        "This item is used in an active shopping session.",
       );
       return;
     }
@@ -69,11 +75,11 @@ export default function GroceryListScreen({ groceryItems, categories }) {
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Remove", 
+          text: "Remove",
           style: "destructive",
           onPress: () => removeGroceryItem(itemId),
         },
-      ]
+      ],
     );
   }
 
@@ -83,13 +89,21 @@ export default function GroceryListScreen({ groceryItems, categories }) {
         style={styles.deleteBox}
         onPress={() => {
           swipeableRef?.current?.close();
-          removeGroceryItemHandler(id)
+          removeGroceryItemHandler(id);
         }}
       >
         <Ionicons name="trash-outline" size={24} color="#fff" />
         <Text style={styles.deleteText}>Delete</Text>
       </Pressable>
     );
+  }
+
+  if (!isOnline) {
+    return <Text style={{ color: "orange" }}>Offline mode</Text>;
+  }
+
+  if (isSyncing) {
+    return <Text style={{ color: "blue" }}>Syncing…</Text>;
   }
 
   return (
@@ -127,13 +141,23 @@ export default function GroceryListScreen({ groceryItems, categories }) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 80 }}
         renderItem={({ item }) => (
-          <Swipeable renderRightActions={() => renderRightActions(item.id)} ref={swipeableRef} >
+          <Swipeable
+            renderRightActions={() => renderRightActions(item.id)}
+            ref={swipeableRef}
+          >
             <View style={[styles.item, { backgroundColor: theme.colors.card }]}>
               <View style={styles.left}>
                 <View>
                   <Text style={{ color: theme.colors.text }}>{item.name}</Text>
-                  <Text style={{ color: theme.colors.text, fontSize: 12, textTransform: "capitalize" }}>
-                    Qty: {item.qty} {item.unit ? item.unit : "pcs"} ~ {item.category}
+                  <Text
+                    style={{
+                      color: theme.colors.text,
+                      fontSize: 12,
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    Qty: {item.qty} {item.unit ? item.unit : "pcs"} ~{" "}
+                    {item.category}
                   </Text>
                 </View>
               </View>
@@ -143,18 +167,28 @@ export default function GroceryListScreen({ groceryItems, categories }) {
                   style={styles.iconBtn}
                 >
                   <Ionicons
-                    name={isItemInActiveSession(item.id) ? "checkmark-circle" : "add-circle-outline"}
+                    name={
+                      isItemInActiveSession(item.id)
+                        ? "checkmark-circle"
+                        : "add-circle-outline"
+                    }
                     size={24}
-                    color={isItemInActiveSession(item.id) ? "#4CAF50" : "#4CAF50"}
+                    color={
+                      isItemInActiveSession(item.id) ? "#4CAF50" : "#4CAF50"
+                    }
                   />
-                  <Text style={[styles.addText, {color:theme.colors.text }]}>{isItemInActiveSession(item.id) ? "Added" : "Add"}</Text>
+                  <Text style={[styles.addText, { color: theme.colors.text }]}>
+                    {isItemInActiveSession(item.id) ? "Added" : "Add"}
+                  </Text>
                 </Pressable>
                 <Pressable
                   style={styles.iconBtn}
                   onPress={() => editItemHandler(item.id)}
                 >
                   <Ionicons name="pencil-outline" size={24} color="#4CAF50" />
-                  <Text style={[styles.addText, {color:theme.colors.text }]}>Edit</Text>
+                  <Text style={[styles.addText, { color: theme.colors.text }]}>
+                    Edit
+                  </Text>
                 </Pressable>
               </View>
             </View>

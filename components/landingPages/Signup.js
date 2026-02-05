@@ -6,6 +6,7 @@ import InputRow from "../settings/InputRow";
 function Signup() {
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [location, setLocation] = useState('');
 
   const { signupUser } = useAuth();
@@ -26,6 +27,7 @@ function Signup() {
     const signupSuccess = await signupUser({
       name: userName,
       email: email,
+      password: password,
       location: location,
     });
     if(signupSuccess.success){
@@ -36,6 +38,7 @@ function Signup() {
     }    
     setUserName("");
     setEmail("");
+    setPassword("");
     setLocation("");
   }
 
@@ -52,6 +55,14 @@ function Signup() {
         value={email}
         onChangeText={setEmail}
         keyboardType="email"
+        notEditable={true}
+      />
+      <InputRow
+        label="Password"
+        value={password}
+        onChangeText={setPassword}
+        keyboardType="password"
+        secureTextEntry={true}
         notEditable={true}
       />
       <InputRow

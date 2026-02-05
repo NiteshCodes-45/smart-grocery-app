@@ -18,6 +18,10 @@
     "android": {
       "package": "com.neets.smartgrocery",
       "versionCode": 1,
+      "backgroundColor": "#ffffff",
+      "statusBar": {
+        "backgroundColor": "#ffffff"
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#F3F7F4"

@@ -1,56 +1,89 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  serverTimestamp,
+  onSnapshot,
+} from "firebase/firestore";
+
 import { useAuth } from "./auth-context";
+import { db } from "../firebase/firebaseConfig";
 
 const SettingsContext = createContext(null);
-
-function getSettingsKey(email) {
-  return `USER_SETTINGS_${encodeURIComponent(email.toLowerCase())}`;
-}
 
 export function SettingsProvider({ children }) {
   const { currentUser } = useAuth();
 
   const [settings, setSettings] = useState(null);
-  const [isSettingsLoading, setIsSettingsLoading] = useState(false);
+  const [isSettingsLoading, setIsSettingsLoading] = useState(true);
 
-  /* -------- Load settings per user -------- */
+  /* -------- Load & sync settings -------- */
   useEffect(() => {
-    async function loadSettings() {
-      if (!currentUser?.email) {
-        setSettings(null);
-        return;
-      }
-
-      setIsSettingsLoading(true);
-
-      const key = getSettingsKey(currentUser.email);
-      const stored = await AsyncStorage.getItem(key);
-
-      setSettings(stored ? JSON.parse(stored) : getDefaultSettings());
+    if (!currentUser?.uid) {
+      setSettings(null);
       setIsSettingsLoading(false);
+      return;
     }
 
-    loadSettings();
-  }, [currentUser]);
+    const ref = doc(db, "users", currentUser.uid, "settings", "main");
 
-  /* -------- Persist settings -------- */
-  useEffect(() => {
-    if (!currentUser?.email || !settings) return;
+    const unsubscribe = onSnapshot(ref, async (snap) => {
+      if (snap.exists()) {
+        setSettings(snap.data());
+      } else {
+        // First-time user → create defaults
+        const defaults = getDefaultSettings();
+        await setDoc(ref, {
+          ...defaults,
+          updatedAt: serverTimestamp(),
+        });
+        setSettings(defaults);
+      }
 
-    const key = getSettingsKey(currentUser.email);
-    AsyncStorage.setItem(key, JSON.stringify(settings));
-  }, [settings, currentUser]);
+      setIsSettingsLoading(false);
+    });
 
-  function updateSetting(key, value) {
+    return () => unsubscribe();
+  }, [currentUser?.uid]);
+
+  /* -------- Update single setting -------- */
+  async function updateSetting(key, value) {
+    if (!currentUser?.uid || !settings) return;
+
     setSettings((prev) => ({
       ...prev,
       [key]: value,
     }));
+
+    await updateDoc(
+      doc(db, "users", currentUser.uid, "settings", "main"),
+      {
+        [key]: value,
+        updatedAt: serverTimestamp(),
+      }
+    );
   }
 
-  function resetSettings() {
-    setSettings(getDefaultSettings());
+  /* -------- Reset to defaults -------- */
+  async function resetSettings() {
+    if (!currentUser?.uid) return;
+
+    const defaults = getDefaultSettings();
+    setSettings(defaults);
+
+    await setDoc(
+      doc(db, "users", currentUser.uid, "settings", "main"),
+      {
+        ...defaults,
+        updatedAt: serverTimestamp(),
+      }
+    );
+  }
+
+  function markOnboardingSeen() {
+    updateSetting("hasSeenOnboarding", true);
   }
 
   return (
@@ -60,6 +93,7 @@ export function SettingsProvider({ children }) {
         updateSetting,
         resetSettings,
         isSettingsLoading,
+        markOnboardingSeen,
       }}
     >
       {children}
@@ -86,5 +120,7 @@ function getDefaultSettings() {
     notificationsEnabled: true,
     reminderTime: "08:00 AM",
     lowStockAlert: true,
+
+    hasSeenOnboarding: false,
   };
 }
