@@ -49,9 +49,7 @@ function TestingComponent() {
   );
 }
 
-console.log("APP STEP 1: App.js loaded");
 export default function App() {
-  console.log("APP STEP 2: App rendered");
   return (
     <>
       <StatusBar style="light" />
@@ -62,7 +60,6 @@ export default function App() {
               <AuthProvider>
                 <SettingsProvider>
                   <ThemeProvider>
-                    {console.log("APP STEP 5: ThemeProvider mounted")}
                     <ImageBackground
                       source={require("./assets/images/GroceryBg.jpg")}
                       resizeMode="cover"

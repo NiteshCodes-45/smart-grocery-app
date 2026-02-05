@@ -34,7 +34,6 @@ export default function GroceryListScreen({ groceryItems, categories }) {
   const [filter, setFilter] = useState("all"); // all | toBuy | brought
   const swipeableRef = useRef(null);
 
-  console.log(currentUser);
   if (!currentUser?.uid) {
     return <NotFoundItem>Session expired. Please login again.</NotFoundItem>;
   }
