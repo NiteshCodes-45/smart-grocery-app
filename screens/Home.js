@@ -6,7 +6,7 @@ import OnboardingGuide from "../components/landingPages/OnboardingGuide";
 import NotFoundItem from "../components/NotFoundItem";
 import { useSettings } from "../store/settings-context";
 
-function Home({ categories }) {
+function Home({ categories, navigation }) {
   const { theme } = useTheme();
   const { settings, isSettingsLoading, markOnboardingSeen } = useSettings();
   const { groceryItems, isSyncing } = useGrocery();
@@ -23,13 +23,21 @@ function Home({ categories }) {
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       {/* <GroceryHeader /> */}
-      {isSyncing && 
+      {isSyncing && (
         <>
           <NotFoundItem>Loading grocery items...</NotFoundItem>
         </>
-      }
+      )}
       {shouldShowOnboarding && (
-        <OnboardingGuide onFinish={markOnboardingSeen} />
+        <OnboardingGuide
+          onFinish={(action) => {
+            markOnboardingSeen();
+
+            if (action === "ADD_GROCERY") {
+              navigation.navigate("AddGrocery"); // or open modal
+            }
+          }}
+        />
       )}
 
       {!isSyncing && groceryItems.length > 0 && (

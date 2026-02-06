@@ -57,12 +57,19 @@ export function AuthProvider({ children }) {
   }
 
   async function loginUser({ email, password }) {
+    console.log("Logging in user:", email);
     if (!email || !password) {
       return { success: false, message: "Email & password required" };
     }
 
-    await signInWithEmailAndPassword(auth, email, password);
-    return { success: true };
+    const loginSuccess = await signInWithEmailAndPassword(auth, email, password);
+    console.log("Login success:", loginSuccess);
+    if (!loginSuccess) {
+      return { success: false, message: "Invalid email or password" };
+    }
+    if (loginSuccess.user) {
+      return { success: true };
+    }
   }
 
   async function logoutUser() {

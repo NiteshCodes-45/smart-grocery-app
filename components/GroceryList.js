@@ -5,8 +5,10 @@ import {
   StyleSheet,
   Pressable,
   Alert,
+  TextInput,
+  LayoutAnimation,
 } from "react-native";
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useCallback } from "react";
 
 import { useTheme } from "../store/theme-context";
 import { useNetwork } from "../store/network-context";
@@ -19,37 +21,53 @@ import NotFoundItem from "../components/NotFoundItem";
 import { useNavigation } from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Swipeable } from "react-native-gesture-handler";
+import { not } from "firebase/firestore/pipelines";
 
 export default function GroceryListScreen({ groceryItems, categories }) {
   const { theme } = useTheme();
   const { isOnline } = useNetwork();
-  const { removeGroceryItem, getToBuyItems, getBroughtItems, isSyncing } =
-    useGrocery();
+  const { removeGroceryItem, isSyncing } = useGrocery();
   const { addItemToSession, isItemInActiveSession } = useShopping();
   const navigation = useNavigation();
   const { currentUser } = useAuth();
 
   const [category, setCategory] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [openDropdown, setOpenDropdown] = useState(null);
   const [filter, setFilter] = useState("all"); // all | toBuy | brought
-  const swipeableRef = useRef(null);
+  const swipeableRefs = useRef({});
 
   if (!currentUser?.uid) {
     return <NotFoundItem>Session expired. Please login again.</NotFoundItem>;
   }
 
   const filteredItems = useMemo(() => {
-    let items = groceryItems;
+    if (!groceryItems) return [];
 
+    let items = [...groceryItems];
+
+    // 1️⃣ Status filter
+    if (filter === "toBuy") {
+      items = items.filter((i) => !i.isBought);
+    }
+
+    if (filter === "brought") {
+      items = items.filter((i) => i.isBought);
+    }
+
+    // 2️⃣ Category filter
     if (category && category !== "All") {
       items = items.filter((i) => i.category === category);
     }
 
-    if (filter === "toBuy") items = getToBuyItems();
-    if (filter === "brought") items = getBroughtItems();
+    // 3️⃣ Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      items = items.filter((i) => i.name.toLowerCase().includes(query));
+    }
 
     return items;
-  }, [groceryItems, category, filter]);
+  }, [groceryItems, filter, category, searchQuery]);
 
   function editItemHandler(id) {
     navigation.navigate("Edit Grocery", { itemId: id });
@@ -57,7 +75,6 @@ export default function GroceryListScreen({ groceryItems, categories }) {
 
   function addItemToSessionHandler(item) {
     addItemToSession(item);
-    Alert.alert("Added", `${item.name} added to shopping list ✅`);
   }
 
   function removeGroceryItemHandler(itemId) {
@@ -87,7 +104,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
       <Pressable
         style={styles.deleteBox}
         onPress={() => {
-          swipeableRef?.current?.close();
+          swipeableRefs?.current?.close();
           removeGroceryItemHandler(id);
         }}
       >
@@ -97,44 +114,109 @@ export default function GroceryListScreen({ groceryItems, categories }) {
     );
   }
 
-  if (!isOnline) {
-    return <Text style={{ color: "orange" }}>Offline mode</Text>;
+  {
+    !isOnline && <Text style={{ color: "orange" }}>Offline mode</Text>;
   }
 
-  if (isSyncing) {
-    return <Text style={{ color: "blue" }}>Syncing…</Text>;
+  {
+    isSyncing && <Text style={{ color: "blue" }}>Syncing…</Text>;
   }
+
+  if (groceryItems.length === 0) {
+    return (
+      <NotFoundItem>
+        No groceries yet 🛒
+        {"\n"}Tap + to add your first item
+      </NotFoundItem>
+    );
+  }
+
+  const FiltersUI = useCallback(
+    () => (
+      <View
+        style={[styles.filtersWrapper, { backgroundColor: theme.colors.card }]}
+      >
+        <View style={styles.filterCatContainer}>
+          <View style={styles.dropdownWrapper}>
+            <CategoryDropdown
+              cats={categories}
+              value={category}
+              setCategory={setCategory}
+              open={openDropdown === "category"}
+              setOpen={(isOpen) => setOpenDropdown(isOpen ? "category" : null)}
+              placeholder="Select Category"
+              zIndex={3000}
+              zIndexInverse={1000}
+            />
+          </View>
+          <Text style={[styles.labelText, { color: theme.colors.text }]}>
+            Showing {filteredItems.length} of {groceryItems.length} items
+          </Text>
+        </View>
+        <View style={styles.filterTop}>
+          <TextInput
+            placeholder="Search Grocery Items..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={[
+              styles.searchInput,
+              {
+                backgroundColor: theme.colors.card,
+                color: theme.colors.text,
+                padding: 10,
+                borderRadius: 8,
+                borderColor: theme.colors.border,
+                placeholderTextColor: theme.colors.text,
+              },
+            ]}
+            placeholderTextColor={theme.colors.text}
+          />
+        </View>
+
+        <View
+          style={[
+            styles.filterRow,
+            {
+              backgroundColor: theme.colors.background,
+              borderBottomColor: theme.colors.border,
+            },
+          ]}
+        >
+          <Buttons
+            active={filter === "all"}
+            pressBtn={() => {
+              LayoutAnimation.easeInEaseOut();
+              setFilter("all");
+            }}
+          >
+            All
+          </Buttons>
+          <Buttons
+            active={filter === "toBuy"}
+            pressBtn={() => {
+              LayoutAnimation.easeInEaseOut();
+              setFilter("toBuy");
+            }}
+          >
+            To Buy
+          </Buttons>
+          <Buttons
+            active={filter === "brought"}
+            pressBtn={() => {
+              LayoutAnimation.easeInEaseOut();
+              setFilter("brought");
+            }}
+          >
+            Bought
+          </Buttons>
+        </View>
+      </View>
+    ),
+    [filter, category, searchQuery],
+  );
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={styles.filterCatContainer}>
-        <View style={styles.dropdownWrapper}>
-          <CategoryDropdown
-            cats={categories}
-            value={category}
-            setCategory={setCategory}
-            open={openDropdown === "category"}
-            setOpen={(isOpen) => setOpenDropdown(isOpen ? "category" : null)}
-            placeholder="Select Category"
-            zIndex={3000}
-            zIndexInverse={1000}
-          />
-        </View>
-        <Text style={styles.labelText}>
-          Showing {filteredItems.length} of {groceryItems.length} items
-        </Text>
-      </View>
-
-      <View style={[styles.filterRow, { backgroundColor: theme.colors.card }]}>
-        <Buttons pressBtn={() => setFilter("all")}>All</Buttons>
-        <Buttons pressBtn={() => setFilter("toBuy")}>To Buy</Buttons>
-        <Buttons pressBtn={() => setFilter("brought")}>Bought</Buttons>
-      </View>
-
-      {filteredItems.length === 0 && (
-        <NotFoundItem>No grocery items found</NotFoundItem>
-      )}
-
       <FlatList
         data={filteredItems}
         keyExtractor={(item) => item.id}
@@ -142,12 +224,13 @@ export default function GroceryListScreen({ groceryItems, categories }) {
         renderItem={({ item }) => (
           <Swipeable
             renderRightActions={() => renderRightActions(item.id)}
-            ref={swipeableRef}
+            ref={(ref) => (swipeableRefs.current[item.id] = ref)}
           >
+            {/* <Pressable onLongPress={() => {Alert.alert("Quick actions","",[{ text: "Edit", onPress: () => editItemHandler(item.id) },{ text: "Add to Shopping", onPress: () => addItemToSessionHandler(item) },]);}}></Pressable> */}
             <View style={[styles.item, { backgroundColor: theme.colors.card }]}>
               <View style={styles.left}>
                 <View>
-                  <Text style={{ color: theme.colors.text }}>{item.name}</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight:600, fontSize:14 }}>{item.name}</Text>
                   <Text
                     style={{
                       color: theme.colors.text,
@@ -163,7 +246,10 @@ export default function GroceryListScreen({ groceryItems, categories }) {
               <View style={styles.shoppingBtn}>
                 <Pressable
                   onPress={() => addItemToSessionHandler(item)}
-                  style={styles.iconBtn}
+                  style={[
+                    styles.iconBtn,
+                    isItemInActiveSession(item.id) && styles.addedChip,
+                  ]}
                 >
                   <Ionicons
                     name={
@@ -193,19 +279,43 @@ export default function GroceryListScreen({ groceryItems, categories }) {
             </View>
           </Swipeable>
         )}
+        ListHeaderComponent={FiltersUI}
+        stickyHeaderIndices={[0]}
       />
+      {filteredItems.length === 0 && (
+        <View style={styles.notFoundWrapper}>
+          <NotFoundItem>No grocery items found</NotFoundItem>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  filtersWrapper: {
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    paddingBottom: 14,
+    marginBottom: 4,
+    zIndex: 10,
+  },
+  notFoundWrapper: {
+    position: "absolute",
+    top: "50%",
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    transform: [{ translateY: "-50%" }],
+  },
   filterCatContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     gap: 16,
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 10,
   },
   dropdownWrapper: {
     flex: 1,
@@ -217,7 +327,7 @@ const styles = StyleSheet.create({
   },
   filterTop: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    marginBottom: 10,
   },
   count: {
     marginTop: 8,
@@ -247,7 +357,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   shoppingBtn: {
-    flexDirection: "row",    alignItems: "center",
+    flexDirection: "row",
+    alignItems: "center",
     gap: 25,
   },
   iconBtn: {
@@ -280,5 +391,15 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     marginTop: 4,
+  },
+  addedChip: {
+    backgroundColor: "#E8F5E9",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 1,
+  },
+  searchInput: {
+    fontSize: 14,
+    borderWidth: 1,
   },
 });

@@ -4,8 +4,10 @@ export const LightTheme = {
     background: "#8ba183ff",
     card: "#c3d0beff",
     primary: "#2F6F4E",
+    secondary: "#4CAF50",
     text: "#1B4332",
-    border: "#E0E0E0",
+    btnText: "#FFFFFF",
+    border: "#FFFFFF",
   },
 };
 
@@ -15,7 +17,9 @@ export const DarkTheme = {
     background: "#121212",
     card: "#1E1E1E",
     primary: "#4CAF50",
+    secondary: "#81C784",
     text: "#FFFFFF",
+    btnText: "#FFFFFF",
     border: "#333",
   },
 };

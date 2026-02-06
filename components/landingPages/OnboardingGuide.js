@@ -1,9 +1,17 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import Logo from "../../assets/logo.png";
 
 export default function OnboardingGuide({ onFinish }) {
   return (
     <View style={styles.container}>
+      <View style={{ alignItems: "center" }}>
+        <Image
+          source={Logo}
+          style={{ width: 55, height: 55, marginBottom: 20 }}
+        />
+      </View>
+
       <Text style={styles.title}>Welcome to Smart Grocery</Text>
       <Text style={styles.subtitle}>
         Let’s get you started in just a few steps
@@ -27,8 +35,19 @@ export default function OnboardingGuide({ onFinish }) {
         desc="Manage your profile, preferences and app settings anytime."
       />
 
-      <Pressable onPress={onFinish} style={{ marginTop: 20 }}>
-        <Text>Got it, let’s start</Text>
+      <GuideItem
+        icon="time-outline"
+        title="Session History"
+        desc="Review your past grocery sessions and shopping history."
+      />
+
+      <Pressable
+        style={styles.primaryBtn}
+        onPress={() => onFinish("ADD_GROCERY")}
+      >
+        <Text style={styles.primaryBtnText}>
+          Add my first grocery
+        </Text>
       </Pressable>
     </View>
   );
@@ -53,6 +72,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     elevation: 2,
+    alignItems: "center",
   },
   title: {
     fontSize: 20,
@@ -79,5 +99,23 @@ const styles = StyleSheet.create({
   itemDesc: {
     fontSize: 13,
     color: "#555",
+  },
+  /* BUTTON */
+  primaryBtn: {
+    flexDirection: "row",
+    justifyContent:"center",
+    gap: 8,
+    borderWidth:1,
+    borderColor:"#2F6F4E",
+    backgroundColor: "#2F6F4E",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  primaryBtnText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
   },
 });

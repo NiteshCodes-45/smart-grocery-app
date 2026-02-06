@@ -52,7 +52,7 @@ function TestingComponent() {
 export default function App() {
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <ErrorBoundary>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <SafeAreaProvider>
