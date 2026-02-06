@@ -20,7 +20,7 @@ const seasons = [
 //unit: "kg" | "g" | "litre" | "ml" | "pcs" | "dozen"
 const UNITS = [
   { label: "Kilogram (kg)", value: "kg" },
-  { label: "Gram (g)", value: "g" },
+  { label: "Gram (g)", value: "gm" },
   { label: "Litre (L)", value: "litre" },
   { label: "Millilitre (ml)", value: "ml" },
   { label: "Pieces (pcs)", value: "pcs" },

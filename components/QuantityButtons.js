@@ -1,13 +1,16 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useTheme } from "../store/theme-context";
-
+import { getQuantityStep } from "../data/Constant";
 export default function QuantityButtons({
   qty,
+  unit,
+  unitType,
   onIncrease,
   onDecrease,
   disabled = false,
 }) {
   const { theme } = useTheme();
+  const step = getQuantityStep(unit, unitType);
   return (
     <View style={styles.container}>
       <Pressable
@@ -15,17 +18,17 @@ export default function QuantityButtons({
         onPress={onDecrease}
         disabled={disabled}
       >
-        <Text style={styles.text}>−</Text>
+        <Text style={styles.text}>−{step}</Text>
       </Pressable>
 
-      <Text style={[styles.qty, {color:theme.colors.text}]}>{qty}</Text>
+      <Text style={[styles.qty, {color:theme.colors.text}]}>{qty}{unit}</Text>
 
       <Pressable
         style={[styles.btn, disabled && styles.disabled]}
         onPress={onIncrease}
         disabled={disabled}
       >
-        <Text style={styles.text}>+</Text>
+        <Text style={styles.text}>+{step}</Text>
       </Pressable>
     </View>
   );
@@ -49,7 +52,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   text: {
-    fontSize: 18,
+    fontSize: 10,
     fontWeight: "bold",
   },
   qty: {

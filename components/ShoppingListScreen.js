@@ -188,6 +188,8 @@ export default function ShoppingListScreen() {
 
               <QuantityButtons
                 qty={item.qty}
+                unit={item.unit}
+                unitType={item.unitType || getUnitType(item.unit)}
                 disabled={item.isBought}
                 onIncrease={() => updateQuantity(item.id, "inc")}
                 onDecrease={() => updateQuantity(item.id, "dec")}
