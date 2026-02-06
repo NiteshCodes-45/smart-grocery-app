@@ -8,6 +8,7 @@ import PickerRow from "./settings/PickerRow";
 import InputRow from "./settings/InputRow";
 import { useTheme } from "../store/theme-context";
 import { seasons, UNITS, priorities, frequencies } from "../data/Constant";
+import { getUnitType } from "../data/Constant";
 //import CategoryDropdown from "./CategoryDrodown";
 
 function AddGroceryForm({
@@ -37,6 +38,7 @@ function AddGroceryForm({
     const itemToEdit = groceryItems.find(item => item.id === itemId);
     if (!itemToEdit) return;
 
+    const unitType = itemToEdit.unitType || getUnitType(itemToEdit.unit);
     setName(itemToEdit.name);
     setQty(itemToEdit.qty.toString());
     setUnit(itemToEdit.unit ?? "pcs");
@@ -58,6 +60,7 @@ function AddGroceryForm({
       name: name.trim(),
       qty: Number(qty),
       unit,
+      unitType: getUnitType(unit),
       category,
       season,
       priority,

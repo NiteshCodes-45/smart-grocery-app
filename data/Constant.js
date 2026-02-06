@@ -62,4 +62,19 @@ const currencies = [
 //   { label: "JPY (¥)", value: "jpy", symbol: "¥" },
 ];
 
-export { seasons, UNITS, priorities, frequencies, categories, themes, languages, currencies };
+const UNIT_TYPE_MAP = {
+  pcs: "COUNT",
+  piece: "COUNT",
+
+  gm: "WEIGHT",
+  kg: "WEIGHT",
+
+  ml: "VOLUME",
+  ltr: "VOLUME",
+};
+
+function getUnitType(unit) {
+  return UNIT_TYPE_MAP[unit] || "COUNT";
+}
+
+export { seasons, UNITS, priorities, frequencies, categories, themes, languages, currencies, UNIT_TYPE_MAP, getUnitType };

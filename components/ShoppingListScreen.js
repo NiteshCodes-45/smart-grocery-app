@@ -16,6 +16,7 @@ import { useAuth } from "../store/auth-context";
 import QuantityButtons from "../components/QuantityButtons";
 import NotFoundItem from "../components/NotFoundItem";
 import { currencies } from "../data/Constant";
+import { getUnitType } from "../data/Constant";
 
 export default function ShoppingListScreen() {
   const { theme } = useTheme();
@@ -131,7 +132,7 @@ export default function ShoppingListScreen() {
   function toggleBoughtHandler(itemId) {
     const item = items.find((i) => i.id === itemId);
     if (!item) return;
-
+    const unitType = item.unitType || getUnitType(item.unit);
     const price = Number(item.price);
 
     if (!item.isBought && (!price || price <= 0)) {
