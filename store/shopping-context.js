@@ -13,6 +13,7 @@ import {
 
 import { useAuth } from "./auth-context";
 import { db } from "../firebase/firebaseConfig";
+import { getQuantityStep, getUnitType } from "../data/Constant";
 
 const ShoppingContext = createContext(null);
 
@@ -121,7 +122,7 @@ export function ShoppingProvider({ children }) {
         name: grocery.name,
         category: grocery.category,
         unit: grocery.unit,
-        qty: grocery.defaultQty || 1,
+        qty: grocery.qty || 1,
         price: "",
         isBought: false,
         updatedAt: serverTimestamp(),
@@ -133,8 +134,15 @@ export function ShoppingProvider({ children }) {
     const item = sessionItems.find((i) => i.id === itemId);
     if (!item || item.isBought) return;
 
+    const unitType = item.unitType || getUnitType(item.unit);
+    const step = getQuantityStep(item.unit, unitType);
+
+    // const newQty =
+    //   type === "inc" ? item.qty + 1 : Math.max(1, item.qty - 1);
     const newQty =
-      type === "inc" ? item.qty + 1 : Math.max(1, item.qty - 1);
+      type === "inc"
+        ? item.qty + step
+        : Math.max(step, item.qty - step);
 
     await updateDoc(
       doc(db, "users", currentUser.uid, "shoppingItems", itemId),

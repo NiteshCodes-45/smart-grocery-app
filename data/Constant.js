@@ -62,6 +62,7 @@ const currencies = [
 //   { label: "JPY (¥)", value: "jpy", symbol: "¥" },
 ];
 
+
 const UNIT_TYPE_MAP = {
   pcs: "COUNT",
   piece: "COUNT",
@@ -77,4 +78,30 @@ function getUnitType(unit) {
   return UNIT_TYPE_MAP[unit] || "COUNT";
 }
 
-export { seasons, UNITS, priorities, frequencies, categories, themes, languages, currencies, UNIT_TYPE_MAP, getUnitType };
+function getQuantityStep(unit, unitType) {
+  if (unitType === "COUNT") return 1;
+
+  if (unitType === "WEIGHT") {
+    return unit === "gm" ? 50 : 0.25;
+  }
+
+  if (unitType === "VOLUME") {
+    return unit === "ml" ? 50 : 0.25;
+  }
+
+  return 1;
+}
+
+export {
+  seasons,
+  UNITS,
+  priorities,
+  frequencies,
+  categories,
+  themes,
+  languages,
+  currencies,
+  UNIT_TYPE_MAP,
+  getUnitType,
+  getQuantityStep,
+};
