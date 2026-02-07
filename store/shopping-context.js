@@ -137,12 +137,25 @@ export function ShoppingProvider({ children }) {
     const unitType = item.unitType || getUnitType(item.unit);
     const step = getQuantityStep(item.unit, unitType);
 
-    // const newQty =
-    //   type === "inc" ? item.qty + 1 : Math.max(1, item.qty - 1);
-    const newQty =
-      type === "inc"
-        ? item.qty + step
-        : Math.max(step, item.qty - step);
+    let newQty = item.qty;
+
+    // ✅ Case 1: Picker provides direct number
+    if (typeof type === "number") {
+      newQty = Math.max(step, type);
+    }
+
+    // ✅ Case 2: Increment
+    else if (type === "inc") {
+      newQty = item.qty + step;
+    }
+
+    // ✅ Case 3: Decrement
+    else if (type === "dec") {
+      newQty = Math.max(step, item.qty - step);
+    }
+
+    // 🚨 Safety guard (optional but good)
+    if (newQty === item.qty) return;
 
     await updateDoc(
       doc(db, "users", currentUser.uid, "shoppingItems", itemId),

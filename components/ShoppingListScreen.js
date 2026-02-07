@@ -17,10 +17,12 @@ import QuantityButtons from "../components/QuantityButtons";
 import NotFoundItem from "../components/NotFoundItem";
 import { currencies } from "../data/Constant";
 import { getUnitType } from "../data/Constant";
+import { useState } from "react";
+import QuantityPicker from "./QuantityPicker";
+import { getQuantityOptions } from "../utils/quantityOptions";
 
 export default function ShoppingListScreen() {
   const { theme } = useTheme();
-
   const {
     activeSession,
     startSession,
@@ -36,6 +38,7 @@ export default function ShoppingListScreen() {
   const { settings } = useSettings();
   const { currentUser } = useAuth();
   const { setGroceryBoughtStatus } = useGrocery();
+  const [pickerItemId, setPickerItemId] = useState(null);
 
   // Auth guard
   if (!currentUser?.uid) {
@@ -132,7 +135,6 @@ export default function ShoppingListScreen() {
   function toggleBoughtHandler(itemId) {
     const item = items.find((i) => i.id === itemId);
     if (!item) return;
-    const unitType = item.unitType || getUnitType(item.unit);
     const price = Number(item.price);
 
     if (!item.isBought && (!price || price <= 0)) {
@@ -186,14 +188,32 @@ export default function ShoppingListScreen() {
                 </Text>
               </View>
 
-              <QuantityButtons
-                qty={item.qty}
-                unit={item.unit}
-                unitType={item.unitType || getUnitType(item.unit)}
-                disabled={item.isBought}
-                onIncrease={() => updateQuantity(item.id, "inc")}
-                onDecrease={() => updateQuantity(item.id, "dec")}
-              />
+              {/* {(item.unitType || getUnitType(item.unit)) === "COUNT" ? ( */}
+                <QuantityButtons
+                  qty={item.qty}
+                  unit={item.unit}
+                  unitType={item.unitType || getUnitType(item.unit)}
+                  disabled={item.isBought}
+                  onIncrease={() => updateQuantity(item.id, "inc")}
+                  onDecrease={() => updateQuantity(item.id, "dec")}
+                />
+              {/* // ) : (
+              //   <>
+              //     <Pressable onPress={() => setPickerItemId(item.id)}>
+              //       <Text>
+              //         {item.qty} {item.unit} ▾
+              //       </Text>
+              //     </Pressable>
+              //     <QuantityPicker
+              //       visible={pickerItemId === item.id}
+              //       unit={item.unit}
+              //       selected={item.qty}
+              //       options={getQuantityOptions(item.unit, getUnitType(item.unit))}
+              //       onSelect={(val) => updateQuantity(item.id, val)}
+              //       onClose={() => setPickerItemId(null)}
+              //     />
+              //   </>
+              // )} */}
             </View>
 
             {/* Row 2 – Price */}
@@ -228,7 +248,7 @@ export default function ShoppingListScreen() {
 
       {/* Footer */}
       <View style={[styles.footer, { backgroundColor: theme.colors.card }]}>
-        <Text style={[styles.total, {color: theme.colors.text}]}>
+        <Text style={[styles.total, { color: theme.colors.text }]}>
           Total:{" "}
           {currencies.find((c) => c.value === settings.currency)?.symbol || "₹"}{" "}
           {total}
