@@ -1,24 +1,21 @@
 import Section from "../components/settings/Section";
 import InputRow from "../components/settings/InputRow";
 import Buttons from "../components/Buttons";
-import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "../store/auth-context";
 import { useTheme } from "../store/theme-context";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { db } from "../firebase/firebaseConfig";
 
 function Profile() {
   const [userId, setUserId] = useState();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [location, setLocation] = useState("");
-  const { currentUser, updateProfile, logoutUser } = useAuth();
+  const { currentUser, userProfile, updateProfile, logoutUser, deleteAccount} = useAuth();
 
   const navigation = useNavigation();
   const { theme } = useTheme();
-
   /* -------- Load profile -------- */
   useEffect(() => {
     if (!currentUser?.uid) {
@@ -29,16 +26,10 @@ function Profile() {
     setEmail(currentUser.email || "");
     setName(currentUser.displayName || "");
 
-    async function loadProfile() {
-      const snap = await getDoc(doc(db, "users", currentUser.uid));
-
-      if (snap.exists()) {
-        setLocation(snap.data().location || "");
-      }
+    if (userProfile) {
+      setLocation(userProfile.location || "");
     }
-
-    loadProfile();
-  }, [currentUser]);
+  }, [currentUser, userProfile]);
 
   /* -------- Save -------- */
   async function saveProfileHandler() {
@@ -46,7 +37,7 @@ function Profile() {
       Alert.alert("Invalid Input", "Please enter name.");
       return;
     }
-
+  
     await updateProfile({ name, location });
 
     Alert.alert("Success", "Profile Updated", [
@@ -57,6 +48,45 @@ function Profile() {
   function logoutProfileHandler() {
     logoutUser();
   }
+
+  async function deleteAccountHandler() {
+    console.log("Delete Account");
+    const res = await deleteAccount();
+    console.log(res);
+    if (res?.requiresReauth) {
+      Alert.alert("Re-login required", res.message);
+      logoutUser();
+      return;
+    }
+
+    if (!res.success) {
+      Alert.alert("Error", res.message);
+      return;
+    }
+
+    Alert.alert("Account deleted");
+  }
+
+  function confirmDeleteHandler() {
+    Alert.alert(
+      "Delete Account",
+      "This will permanently delete your account and all data. This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: deleteAccountHandler,
+        },
+      ]
+    );
+  }
+
+  const isChanged = name !== userProfile?.name || location !== userProfile?.location;
+
+  // if (isDeleting) {
+  //   return <ActivityIndicator color="red" />;
+  // }
 
   return (
     <View
@@ -107,6 +137,16 @@ function Profile() {
           LOGOUT
         </Buttons>
       </View>
+      <View style={styles.logoutContainer}>
+        <Buttons
+          style={styles.dangerBtn}
+          pressBtn={confirmDeleteHandler}
+          disabled={!isChanged}
+          btnColor="#ffe5e5"
+        >
+          <Text style={styles.dangerText}>DELETE ACCOUNT</Text>
+        </Buttons>
+      </View>
     </View>
   );
 }
@@ -118,7 +158,17 @@ const styles = StyleSheet.create({
   logoutContainer:{
     marginHorizontal:18,
     marginTop:25,
-  }
+  },
+  dangerBtn: {
+    marginTop: 25,
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  dangerText: {
+    color: "#d32f2f",
+    fontWeight: "600",
+  },
 });
 
 export default Profile;

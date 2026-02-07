@@ -15,10 +15,10 @@ function Buttons({ children, pressBtn, btnColor, active }) {
                 {
                   backgroundColor: active
                     ? theme.colors.primary
-                    : theme.colors.secondary,
+                    : btnColor ? btnColor : theme.colors.secondary,
                   borderColor: active
                     ? theme.colors.primary
-                    : theme.colors.secondary,
+                    : btnColor ? btnColor : theme.colors.secondary,
                 },
               ]
         }

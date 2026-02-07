@@ -39,10 +39,12 @@ function HeroSection() {
   }
 
   async function handleLogin() {
+    console.log("isLoginSuccess");
     const isLoginSuccess = await loginUser({
       email: loginEmail,
       password: loginPassword,
     });
+    console.log(isLoginSuccess);
     if(!isLoginSuccess.success) { Alert.alert("Error", isLoginSuccess.message); }
     if(isLoginSuccess.success) { Alert.alert("Success", "Login Successful"); }
   }
