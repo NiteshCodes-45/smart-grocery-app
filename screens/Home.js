@@ -5,6 +5,7 @@ import GroceryList from "../components/GroceryList";
 import OnboardingGuide from "../components/landingPages/OnboardingGuide";
 import NotFoundItem from "../components/NotFoundItem";
 import { useSettings } from "../store/settings-context";
+import GroceryListSkeleton from "../components/skeletons/GroceryListSkeleton";
 
 function Home({ categories, navigation }) {
   const { theme } = useTheme();
@@ -12,41 +13,42 @@ function Home({ categories, navigation }) {
   const { groceryItems, isSyncing } = useGrocery();
   const groceryItemsCount = groceryItems.length;
   
-  // if (__DEV__) console.log("Home groceryItems:", groceryItems);
+  const isInitialLoading = isSyncing || isSettingsLoading;
 
-  const shouldShowOnboarding =
-    !isSyncing &&
-    !isSettingsLoading &&
+  let content = null;
+
+  if (isInitialLoading) {
+    content = <GroceryListSkeleton />;
+  } else if (
     settings?.hasSeenOnboarding === false &&
-    groceryItems.length === 0;
+    groceryItems.length === 0
+  ) {
+    content = (
+      <OnboardingGuide
+        onFinish={(action) => {
+          markOnboardingSeen();
+          if (action === "ADD_GROCERY") {
+            navigation.navigate("AddGrocery");
+          }
+        }}
+      />
+    );
+  } else if (groceryItems.length > 0) {
+    content = (
+      <GroceryList
+        groceryItems={groceryItems}
+        categories={categories}
+        groceryItemsCount={groceryItemsCount}
+      />
+    );
+  } else {
+    content = <NotFoundItem>No grocery items found</NotFoundItem>;
+  }  
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       {/* <GroceryHeader /> */}
-      {isSyncing && (
-        <>
-          <NotFoundItem>Loading grocery items...</NotFoundItem>
-        </>
-      )}
-      {shouldShowOnboarding && (
-        <OnboardingGuide
-          onFinish={(action) => {
-            markOnboardingSeen();
-
-            if (action === "ADD_GROCERY") {
-              navigation.navigate("AddGrocery"); // or open modal
-            }
-          }}
-        />
-      )}
-
-      {!isSyncing && groceryItems.length > 0 && (
-        <GroceryList
-          groceryItems={groceryItems}
-          categories={categories}
-          groceryItemsCount={groceryItemsCount}
-        />
-      )}
+      {content}
     </View>
   );
 }

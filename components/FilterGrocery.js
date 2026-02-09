@@ -1,92 +1,155 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TextInput, LayoutAnimation } from "react-native";
 import Buttons from "./Buttons";
-import Checkbox from "expo-checkbox";
-import { useMemo, useState } from "react";
+import CategoryDropdown from "./CategoryDrodown";
 
-export default function FilterGrocery({categories, groceryItemsCount, filterBy}) {
-  const [groupByCats, setGroupByCats] = useState(false);
-  const [autoLoad, setAutoLoad] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-
-  useMemo(() => {
-    if (selectedCategory) {
-      filterBy(selectedCategory);
-    }
-  }, [selectedCategory, groupByCats]);
-
+export default function GroceryFilters({
+  theme,
+  categories,
+  category,
+  setCategory,
+  openDropdown,
+  setOpenDropdown,
+  searchQuery,
+  setSearchQuery,
+  filter,
+  setFilter,
+  filteredCount,
+  totalCount,
+}) {
   return (
-    <>
-    <View style={styles.filterContainer}>
-      {/* <View style={styles.filterViewContainer}>
-        <Buttons>ALL</Buttons>
-        <Buttons>To Buy</Buttons>
-        <Buttons>Bought</Buttons>
-      </View> */}
-      <View style={styles.filterViewContainer}>
-        <View style={styles.checkContainer}>
-            <Checkbox
-                value={groupByCats}
-                onValueChange={() => setGroupByCats(!groupByCats)}
-                color={groupByCategory ? '#4CAF50' : undefined}
-            />
-            <Text style={styles.label}>Group By Category</Text>
+    <View
+      style={[styles.filtersWrapper, { backgroundColor: theme.colors.card }]}
+    >
+      {/* Category */}
+      <View style={styles.filterCatContainer}>
+        <View style={styles.dropdownWrapper}>
+          <CategoryDropdown
+            cats={categories}
+            value={category}
+            setCategory={setCategory}
+            open={openDropdown === "category"}
+            setOpen={(isOpen) =>
+              setOpenDropdown(isOpen ? "category" : null)
+            }
+            placeholder="Select Category"
+            zIndex={3000}
+            zIndexInverse={1000}
+          />
         </View>
-        <View style={styles.checkContainer}>
-            <Checkbox
-                value={autoLoad}
-                onValueChange={setAutoLoad}
-                color={autoLoad ? '#4CAF50' : undefined}
-            />
-            <Text style={styles.label}>Auto-Load On Scroll</Text>
-        </View>
+
+        <Text style={[styles.labelText, { color: theme.colors.text }]}>
+          Showing {filteredCount} of {totalCount} items
+        </Text>
       </View>
-    </View> 
-    </>
+
+      {/* Search */}
+      <View style={styles.filterTop}>
+        <TextInput
+          placeholder="Search Grocery Items..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor={theme.colors.text}
+          style={[
+            styles.searchInput,
+            {
+              backgroundColor: theme.colors.card,
+              color: theme.colors.text,
+              padding: 10,
+              borderRadius: 8,
+              borderColor: theme.colors.border,
+            },
+          ]}
+        />
+      </View>
+
+      {/* Filter buttons */}
+      <View
+        style={[
+          styles.filterRow,
+          {
+            backgroundColor: theme.colors.background,
+            borderBottomColor: theme.colors.border,
+          },
+        ]}
+      >
+        <Buttons
+          active={filter === "all"}
+          pressBtn={() => {
+            LayoutAnimation.easeInEaseOut();
+            setFilter("all");
+          }}
+        >
+          All
+        </Buttons>
+
+        <Buttons
+          active={filter === "toBuy"}
+          pressBtn={() => {
+            LayoutAnimation.easeInEaseOut();
+            setFilter("toBuy");
+          }}
+        >
+          To Buy
+        </Buttons>
+
+        <Buttons
+          active={filter === "brought"}
+          pressBtn={() => {
+            LayoutAnimation.easeInEaseOut();
+            setFilter("brought");
+          }}
+        >
+          Bought
+        </Buttons>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  filterContainer: {
-    marginBottom: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: 24,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 5,
-    backgroundColor: "#c3d0beff",
-    borderColor: "#afcfa3ff",
-    elevation: 20,
-  },
-  filterViewContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems:"center",
-    gap:16,
-    padding:10,
-  },
-  checkContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  dropdownWrapper: {
-    flex: 1, 
-    width:300
-  },
-  label: {
-    fontSize: 13,
-  },
-  labelText:{
-    color:"#fff",
-    fontSize:15
+  filtersWrapper: {
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    paddingBottom: 14,
+    marginBottom: 4,
+    zIndex: 10,
   },
   filterCatContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems:"center",
-    gap:16,
-    padding:25,
+    alignItems: "center",
+    gap: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  dropdownWrapper: {
+    flex: 1,
+    width: 350,
+  },
+  labelText: {
+    color: "#fff",
+    fontSize: 12,
+  },
+  filterTop: {
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  count: {
+    marginTop: 8,
+    fontSize: 12,
+    color: "#aaa",
+  },
+  filterRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    padding: 10,
+    marginHorizontal: 20,
+    borderRadius: 10,
+  },
+  searchInput: {
+    fontSize: 14,
+    borderWidth: 1,
   },
 });

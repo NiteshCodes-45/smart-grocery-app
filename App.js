@@ -39,16 +39,6 @@ function NavigationWrapper() {
   );
 }
 
-function TestingComponent() {
-  return(
-    <View style={styles.person}>
-      <Text>Testing Component</Text>
-      <Text>Name: John Doe</Text>
-      <Text>Age: 30</Text>
-    </View>
-  );
-}
-
 export default function App() {
   return (
     <>
