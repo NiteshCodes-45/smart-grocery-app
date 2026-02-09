@@ -6,6 +6,7 @@ import { useTheme } from "../store/theme-context";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import ProfileSkeleton from "../components/skeletons/ProfileSkeleton";
 
 function Profile() {
   const [userId, setUserId] = useState();
@@ -30,6 +31,8 @@ function Profile() {
       setLocation(userProfile.location || "");
     }
   }, [currentUser, userProfile]);
+
+  const isProfileLoading = !userProfile;
 
   /* -------- Save -------- */
   async function saveProfileHandler() {
@@ -83,11 +86,11 @@ function Profile() {
   }
 
   const isChanged = name !== userProfile?.name || location !== userProfile?.location;
-
-  // if (isDeleting) {
-  //   return <ActivityIndicator color="red" />;
-  // }
-
+  
+  if(isProfileLoading){
+    <ProfileSkeleton />
+  }
+  
   return (
     <View
       style={[

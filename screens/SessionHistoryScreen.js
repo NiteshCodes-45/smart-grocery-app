@@ -9,6 +9,7 @@ import { useShopping } from "../store/shopping-context";
 import { useTheme } from "../store/theme-context";
 import { useAuth } from "../store/auth-context";
 import NotFoundItem from "../components/NotFoundItem";
+import SessionHistoryListSkeleton from "../components/skeletons/SessionHistoryListSkeleton";
 
 function formatDate(date) {
   if (!date) return "";
@@ -25,7 +26,7 @@ function toDate(ts) {
 
 export default function SessionHistoryScreen({ navigation }) {
   const { theme } = useTheme();
-  const { sessions, getSessionTotal } = useShopping();
+  const { sessions, getSessionTotal, isLoadingSession} = useShopping();
   const { currentUser } = useAuth();
 
   if (!currentUser) {
@@ -41,6 +42,10 @@ export default function SessionHistoryScreen({ navigation }) {
   .sort(
     (a, b) => toDate(b.finishedAt) - toDate(a.finishedAt)
   );
+
+  if(isLoadingSession){
+    <SessionHistoryListSkeleton />
+  }
 
   if (completedSessions.length === 0) {
     return (

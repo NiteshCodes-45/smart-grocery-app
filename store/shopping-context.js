@@ -22,6 +22,7 @@ export function ShoppingProvider({ children }) {
 
   const [sessions, setSessions] = useState([]);
   const [sessionItems, setSessionItems] = useState([]);
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
 
   /* ---------- ACTIVE SESSION ---------- */
 
@@ -47,6 +48,7 @@ export function ShoppingProvider({ children }) {
         ...d.data(),
       }));
       setSessions(data);
+      setIsLoadingSession(false);
     });
 
     return () => unsub();
@@ -241,6 +243,8 @@ export function ShoppingProvider({ children }) {
         getActiveSessionItems,
         getSessionTotal,
         isItemInActiveSession,
+
+        isLoadingSession,
       }}
     >
       {children}

@@ -17,9 +17,7 @@ import QuantityButtons from "../components/QuantityButtons";
 import NotFoundItem from "../components/NotFoundItem";
 import { currencies } from "../data/Constant";
 import { getUnitType } from "../data/Constant";
-import { useState } from "react";
-import QuantityPicker from "./QuantityPicker";
-import { getQuantityOptions } from "../utils/quantityOptions";
+import ShoppingListSkeleton from "./skeletons/ShoppingListSkeleton";
 
 export default function ShoppingListScreen() {
   const { theme } = useTheme();
@@ -33,12 +31,12 @@ export default function ShoppingListScreen() {
     completeSession,
     getSessionTotal,
     removeItem,
+    isLoadingSession
   } = useShopping();
 
-  const { settings } = useSettings();
+  const { settings, isSettingsLoading } = useSettings();
   const { currentUser } = useAuth();
   const { setGroceryBoughtStatus } = useGrocery();
-  const [pickerItemId, setPickerItemId] = useState(null);
 
   // Auth guard
   if (!currentUser?.uid) {
@@ -49,22 +47,18 @@ export default function ShoppingListScreen() {
     );
   }
 
-  if (!settings) {
-    return (
-      <NotFoundItem>
-        Loading settings…
-      </NotFoundItem>
-    );
+  if (isLoadingSession && !activeSession) {
+    return <ShoppingListSkeleton />
   }
 
-  // Waiting for Firestore
-  if (activeSession === undefined) {
-    return (
-      <NotFoundItem>
-        Initializing shopping session…
-      </NotFoundItem>
-    );
-  }
+  // // Waiting for Firestore
+  // if (activeSession === undefined) {
+  //   return (
+  //     <NotFoundItem>
+  //       Initializing shopping session…
+  //     </NotFoundItem>
+  //   );
+  // }
 
   // No active session
   if (!activeSession) {
