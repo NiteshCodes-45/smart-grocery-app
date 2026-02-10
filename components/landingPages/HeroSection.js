@@ -3,6 +3,7 @@ import { useAuth } from "../../store/auth-context";
 import { Text, StyleSheet, Pressable, Animated, TextInput, View, Alert, Image } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Signup from "./Signup";
+import { useNotification } from "../../notifications/NotificationProvider";
 
 function HeroSection() {
   const [showLogin, setShowLogin] = useState(false);
@@ -13,6 +14,7 @@ function HeroSection() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const { loginUser } = useAuth();
+  const notify = useNotification();
 
   function Input(props) {
     return (
@@ -45,8 +47,12 @@ function HeroSection() {
       password: loginPassword,
     });
     console.log(isLoginSuccess);
-    if(!isLoginSuccess.success) { Alert.alert("Error", isLoginSuccess.message); }
-    if(isLoginSuccess.success) { Alert.alert("Success", "Login Successful"); }
+    if(!isLoginSuccess.success) { 
+      notify.error(isLoginSuccess.message); 
+    }
+    if(isLoginSuccess.success) { 
+      notify.success("Login Successful"); 
+    }
   }
 
   return (

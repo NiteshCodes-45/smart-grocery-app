@@ -10,6 +10,7 @@ import { AuthProvider } from "./store/auth-context";
 import { SettingsProvider } from "./store/settings-context";
 import { ShoppingProvider } from "./store/shopping-context";
 import { NetworkProvider } from "./store/network-context";
+import { NotificationProvider } from "./notifications/NotificationProvider";
 import { ErrorBoundary } from "./ErrorBoundary";
 
 let baseTheme; 
@@ -58,7 +59,9 @@ export default function App() {
                     >
                       <GroceryContextProvider>
                         <ShoppingProvider>
-                          <NavigationWrapper />
+                          <NotificationProvider>
+                            <NavigationWrapper />
+                          </NotificationProvider>
                         </ShoppingProvider>
                       </GroceryContextProvider>
                     </ImageBackground>

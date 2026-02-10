@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, View, TextInput, Text, Alert } from "react-native";
 import { useAuth } from "../../store/auth-context";
 import InputRow from "../settings/InputRow";
+import { useNotification } from "../../notifications/NotificationProvider";
 
 function Signup() {
   const [userName, setUserName] = useState('');
@@ -10,6 +11,7 @@ function Signup() {
   const [location, setLocation] = useState('');
 
   const { signupUser } = useAuth();
+  const notify = useNotification();
 
   function Input(props) {
       return (
@@ -21,7 +23,7 @@ function Signup() {
 
   async function handleSignup() {
     if (userName.trim().length === 0) {
-      Alert.alert("Invalid Input", "Please enter name.");
+      notify.error("Please enter name.");
       return;
     }
     const signupSuccess = await signupUser({
@@ -31,10 +33,10 @@ function Signup() {
       location: location,
     });
     if(signupSuccess.success){
-      Alert.alert("Success", "User Register successfully!!");
+      notify.success("User Register successfully!!");
     }
     if(!signupSuccess.success){
-      Alert.alert("Error", signupSuccess.message);
+      notify.error(signupSuccess.message);
     }    
     setUserName("");
     setEmail("");

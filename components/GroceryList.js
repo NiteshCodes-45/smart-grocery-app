@@ -18,6 +18,7 @@ import FilterGrocery from "../components/FilterGrocery";
 import { useNavigation } from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Swipeable } from "react-native-gesture-handler";
+import { useNotification } from "../notifications/NotificationProvider";
 
 export default function GroceryListScreen({ groceryItems, categories }) {
   const { theme } = useTheme();
@@ -26,6 +27,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
   const { addItemToSession, isItemInActiveSession } = useShopping();
   const navigation = useNavigation();
   const { currentUser } = useAuth();
+  const notify = useNotification();
 
   const [category, setCategory] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,10 +78,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
 
   function removeGroceryItemHandler(itemId) {
     if (isItemInActiveSession(itemId)) {
-      Alert.alert(
-        "Cannot Delete",
-        "This item is used in an active shopping session.",
-      );
+      notify.info("Cannot Delete. This item is used in an active shopping session.")
       return;
     }
     Alert.alert(

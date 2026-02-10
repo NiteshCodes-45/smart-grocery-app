@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Alert, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Buttons from "./Buttons";
 import { useGrocery } from "../store/grocery-context";
@@ -9,7 +9,7 @@ import InputRow from "./settings/InputRow";
 import { useTheme } from "../store/theme-context";
 import { seasons, UNITS, priorities, frequencies } from "../data/Constant";
 import { getUnitType } from "../data/Constant";
-//import CategoryDropdown from "./CategoryDrodown";
+import { useNotification } from "../notifications/NotificationProvider";
 
 function AddGroceryForm({
   categories,
@@ -28,6 +28,7 @@ function AddGroceryForm({
   const { groceryItems } = useGrocery();
   const { settings } = useSettings();
   const { theme } = useTheme();
+  const notify = useNotification();
 
   //get itemId while in edit mode
   const itemId = isEditMode ? route.params.itemId : null;
@@ -52,7 +53,7 @@ function AddGroceryForm({
 
   function saveGroceryHandler() {
     if (name.trim().length === 0) {
-      Alert.alert("Invalid Input", "Please enter a grocery item name.");
+      notify.info('"Invalid Input", "Please enter a grocery item name."');
       return;
     }
 
@@ -69,15 +70,13 @@ function AddGroceryForm({
 
     if (isEditMode && itemId) {
       updateGroceryItem(itemId, groceryData);
-      Alert.alert("Success", "Grocery updated!", [
-        { text: "OK", onPress: () => navigation.goBack() },
-      ]);
+      notify.success('Grocery updated!');
+      navigation.goBack();
     } else {
       addGroceryItem(groceryData);
-      Alert.alert("Success", "Grocery added!", [
-        { text: "OK", onPress: () => navigation.goBack() },
-      ]);
-
+      notify.success('Grocery added!');
+      navigation.goBack();
+      
       // clear only after ADD
       setName("");
       setQty("1");

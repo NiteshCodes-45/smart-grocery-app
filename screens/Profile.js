@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import ProfileSkeleton from "../components/skeletons/ProfileSkeleton";
+import { useNotification } from "../notifications/NotificationProvider";
 
 function Profile() {
   const [userId, setUserId] = useState();
@@ -17,10 +18,11 @@ function Profile() {
 
   const navigation = useNavigation();
   const { theme } = useTheme();
+  const notify = useNotification();
   /* -------- Load profile -------- */
   useEffect(() => {
     if (!currentUser?.uid) {
-      Alert.alert("Session expired", "Please login again.");
+      notify.info("Session expired", "Please login again.");
       return;
     }
 
@@ -37,7 +39,7 @@ function Profile() {
   /* -------- Save -------- */
   async function saveProfileHandler() {
     if (name.trim().length === 0) {
-      Alert.alert("Invalid Input", "Please enter name.");
+      notify.error("Please enter name.");
       return;
     }
   
@@ -53,21 +55,20 @@ function Profile() {
   }
 
   async function deleteAccountHandler() {
-    console.log("Delete Account");
     const res = await deleteAccount();
     console.log(res);
     if (res?.requiresReauth) {
-      Alert.alert("Re-login required", res.message);
+      notify.error(`Re-login required, ${res.message}`);
       logoutUser();
       return;
     }
 
     if (!res.success) {
-      Alert.alert("Error", res.message);
+      notify.error(res.message);
       return;
     }
 
-    Alert.alert("Account deleted");
+    notify.success("Account deleted");
   }
 
   function confirmDeleteHandler() {

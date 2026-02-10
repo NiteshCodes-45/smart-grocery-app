@@ -18,6 +18,7 @@ import NotFoundItem from "../components/NotFoundItem";
 import { currencies } from "../data/Constant";
 import { getUnitType } from "../data/Constant";
 import ShoppingListSkeleton from "./skeletons/ShoppingListSkeleton";
+import { useNotification } from "../notifications/NotificationProvider";
 
 export default function ShoppingListScreen() {
   const { theme } = useTheme();
@@ -37,6 +38,7 @@ export default function ShoppingListScreen() {
   const { settings, isSettingsLoading } = useSettings();
   const { currentUser } = useAuth();
   const { setGroceryBoughtStatus } = useGrocery();
+  const notify = useNotification();
 
   // Auth guard
   if (!currentUser?.uid) {
@@ -82,15 +84,12 @@ export default function ShoppingListScreen() {
 
   function finishShopping() {
     if (!activeSession) {
-      Alert.alert(
-        "No active session",
-        "Please start a shopping session first.",
-      );
+      notify.info("No active session. Please start a shopping session first.")
       return;
     }
 
     if (items.length === 0) {
-      Alert.alert("Nothing to finish", "Your shopping list is empty");
+      notify.info("Nothing to finish", "Your shopping list is empty");
       return;
     }
 
@@ -98,10 +97,7 @@ export default function ShoppingListScreen() {
     const unboughtItems = items.filter((item) => !item.isBought);
 
     if (unboughtItems.length > 0) {
-      Alert.alert(
-        "Unbought Items",
-        `${unboughtItems.length} item(s) are still not marked as bought.`,
-      );
+      notify.info(`Unbought Items, ${unboughtItems.length} item(s) are still not marked as bought.`);
       return;
     }
 
@@ -132,10 +128,7 @@ export default function ShoppingListScreen() {
     const price = Number(item.price);
 
     if (!item.isBought && (!price || price <= 0)) {
-      Alert.alert(
-        "Price Required",
-        "Please enter a valid price before marking as bought."
-      );
+      notify.error("Price Required, Please enter a valid price before marking as bought.");
       return;
     }
 
