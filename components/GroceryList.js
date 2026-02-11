@@ -10,7 +10,7 @@ import { useMemo, useState, useRef } from "react";
 
 import { useTheme } from "../store/theme-context";
 import { useNetwork } from "../store/network-context";
-import { useGrocery } from "../store/grocery-context";
+import { useGrocery } from "../grocery/grocery-context";
 import { useShopping } from "../store/shopping-context";
 import { useAuth } from "../store/auth-context";
 import NotFoundItem from "../components/NotFoundItem";

@@ -1,18 +1,20 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import {
-  collection,
-  addDoc,
   doc,
-  deleteDoc,
   updateDoc,
-  onSnapshot,
   serverTimestamp,
-  query,
-  orderBy,
 } from "firebase/firestore";
+import {
+  subscribeToGroceries,
+  addGrocery,
+  updateGrocery,
+  deleteGrocery,
+} from "./grocery.service";
 
+import { createGroceryModel } from "./grocery.model";
 import { db } from "../firebase/firebaseConfig";
-import { useAuth } from "./auth-context";
+import { useAuth } from "../store/auth-context";
+import { migratePriority } from "../migrations/migratePriority";
 
 const GroceryContext = createContext(null);
 
@@ -28,57 +30,57 @@ export function GroceryContextProvider({ children }) {
       return;
     }
 
-    const q = query(
-      collection(db, "users", currentUser.uid, "groceries"),
-      orderBy("updatedAt", "desc")
-    );
+    //Auto-Migrate Once on Login(Remove after done)
+    migratePriority(currentUser.uid);
 
-    const unsubscribe = onSnapshot(
-      q,
-      { includeMetadataChanges: true },
+    const unsubscribe = subscribeToGroceries(
+      currentUser.uid,
       (snapshot) => {
         const items = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+
         setGroceryItems(items);
-        setSyncing(false)
+        setSyncing(false);
       }
     );
 
-    return () => unsubscribe();
-    
+    return unsubscribe;
   }, [currentUser]);
 
   /* ===================== CRUD ===================== */
 
   async function addGroceryItem(item) {
     if (!currentUser?.uid) return;
-
-    await addDoc(
-      collection(db, "users", currentUser.uid, "groceries"),
-      {
-        ...item,
-        checked: false,
-        updatedAt: serverTimestamp(),
-      }
-    );
+    const model = createGroceryModel(item);
+    await addGrocery(currentUser.uid, model);
+    // await addDoc(
+    //   collection(db, "users", currentUser.uid, "groceries"),
+    //   {
+    //     ...item,
+    //     checked: false,
+    //     updatedAt: serverTimestamp(),
+    //   }
+    // );
   }
 
   async function updateGroceryItem(id, updatedItem) {
-    await updateDoc(
-      doc(db, "users", currentUser.uid, "groceries", id),
-      {
-        ...updatedItem,
-        updatedAt: serverTimestamp(),
-      }
-    );
+    await updateGrocery(currentUser.uid, id, updatedItem);
+    // await updateDoc(
+    //   doc(db, "users", currentUser.uid, "groceries", id),
+    //   {
+    //     ...updatedItem,
+    //     updatedAt: serverTimestamp(),
+    //   }
+    // );
   }
 
   async function removeGroceryItem(id) {
-    await deleteDoc(
-      doc(db, "users", currentUser.uid, "groceries", id)
-    );
+    await deleteGrocery(currentUser.uid, id);
+    // await deleteDoc(
+    //   doc(db, "users", currentUser.uid, "groceries", id)
+    // );
   }
 
   async function toggleBought(id, checked) {

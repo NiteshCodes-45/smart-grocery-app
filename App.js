@@ -4,7 +4,7 @@ import { DefaultTheme, DarkTheme, NavigationContainer } from "@react-navigation/
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet, ImageBackground, View, Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { GroceryContextProvider } from "./store/grocery-context";
+import { GroceryContextProvider } from "./grocery/grocery-context";
 import RootNavigation from "./screens/RootNavigation";
 import { AuthProvider } from "./store/auth-context";
 import { SettingsProvider } from "./store/settings-context";

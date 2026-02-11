@@ -11,7 +11,7 @@ import Checkbox from "expo-checkbox";
 import { useTheme } from "../store/theme-context";
 import { useSettings } from "../store/settings-context";
 import { useShopping } from "../store/shopping-context";
-import { useGrocery } from "../store/grocery-context";
+import { useGrocery } from "../grocery/grocery-context";
 import { useAuth } from "../store/auth-context";
 import QuantityButtons from "../components/QuantityButtons";
 import NotFoundItem from "../components/NotFoundItem";

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Buttons from "./Buttons";
-import { useGrocery } from "../store/grocery-context";
+import { useGrocery } from "../grocery/grocery-context";
 import { useSettings } from "../store/settings-context";
 import PickerRow from "./settings/PickerRow";
 import InputRow from "./settings/InputRow";
@@ -18,13 +18,12 @@ function AddGroceryForm({
   isEditMode,
 }) {
   const [name, setName] = useState("");
-  const [qty, setQty] = useState("");
+  const [qty, setQty] = useState("1");
   const [unit, setUnit] = useState("pcs");
   const [category, setCategory] = useState("");
   const [season, setSeason] = useState("");
   const [priority, setPriority] = useState("");
   const [frequency, setFrequency] = useState(""); 
-  //const [openDropdown, setOpenDropdown] = useState(null);
   const { groceryItems } = useGrocery();
   const { settings } = useSettings();
   const { theme } = useTheme();
@@ -45,27 +44,27 @@ function AddGroceryForm({
     setUnit(itemToEdit.unit ?? "pcs");
     setCategory(itemToEdit.category);
     setSeason(itemToEdit.season ?? "all");
-    setPriority(itemToEdit.priority ?? "medium");
-    setFrequency(itemToEdit.frequency ?? "occasionally");
+    setPriority((itemToEdit.priority ?? "medium").toLowerCase());
+    setFrequency((itemToEdit.frequency ?? "occasionally").toLowerCase());
   }, [isEditMode, itemId, groceryItems]);
   
   const { addGroceryItem, updateGroceryItem } = useGrocery();
 
   function saveGroceryHandler() {
     if (name.trim().length === 0) {
-      notify.info('"Invalid Input", "Please enter a grocery item name."');
+      notify.info("Please enter a grocery item name.");
       return;
     }
 
     const groceryData = {
       name: name.trim(),
-      qty: Number(qty),
+      qty: Number(qty) || 1,
       unit,
       unitType: getUnitType(unit),
       category,
       season,
-      priority,
-      frequency,
+      priority: priority.toLowerCase(),
+      frequency: frequency.toLowerCase(),
     };
 
     if (isEditMode && itemId) {

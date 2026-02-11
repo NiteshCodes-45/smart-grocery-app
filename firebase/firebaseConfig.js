@@ -10,13 +10,17 @@ import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
 
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "",
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "",
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "",
 };
+
+if (!firebaseConfig.apiKey) {
+  console.warn("Firebase config missing!");
+}
 
 // const app = initializeApp(firebaseConfig);
 // export const db = getFirestore(app);
@@ -37,6 +41,10 @@ const firebaseConfig = {
 //   console.log("🌍 Using REAL Firebase");
 // }
 
+if (!process.env.EXPO_PUBLIC_FIREBASE_API_KEY) {
+  console.log("❌ Missing Firebase env variables");
+}
+
 // ✅ App init (singleton-safe)
 const app = getApps().length === 0
   ? initializeApp(firebaseConfig)
@@ -54,7 +62,7 @@ const db = getFirestore(app);
 const USE_EMULATOR =
   process.env.EXPO_PUBLIC_USE_FIREBASE_EMULATOR === "true";
 
-if (USE_EMULATOR) {
+if (__DEV__ && USE_EMULATOR) {
   console.log("🔥 Firebase Emulator ENABLED");
 
   connectAuthEmulator(auth, "http://localhost:9099");

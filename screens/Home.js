@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import { useTheme } from "../store/theme-context";
-import { useGrocery } from "../store/grocery-context";
+import { useGrocery } from "../grocery/grocery-context";
 import GroceryList from "../components/GroceryList";
 import OnboardingGuide from "../components/landingPages/OnboardingGuide";
 import NotFoundItem from "../components/NotFoundItem";
