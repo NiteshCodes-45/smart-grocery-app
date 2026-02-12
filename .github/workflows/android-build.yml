@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install dependencies
         run: npm install
@@ -57,3 +57,12 @@ jobs:
         with:
           name: app-release
           path: android/app/build/outputs/apk/release/app-release.apk
+      
+      - name: Increase Node Memory
+        run: echo "NODE_OPTIONS=--max-old-space-size=4096" >> $GITHUB_ENV
+
+      - run: npx expo prebuild --platform android --clean --no-install
+
+      - run: |
+          cd android
+          ./gradlew assembleRelease --no-daemon
