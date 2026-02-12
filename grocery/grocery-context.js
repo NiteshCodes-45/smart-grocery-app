@@ -31,7 +31,7 @@ export function GroceryContextProvider({ children }) {
     }
 
     //Auto-Migrate Once on Login(Remove after done)
-    migratePriority(currentUser.uid);
+    //migratePriority(currentUser.uid);
 
     const unsubscribe = subscribeToGroceries(
       currentUser.uid,

@@ -15,13 +15,13 @@ export async function migratePriority(uid) {
   snapshot.forEach((docSnap) => {
     const data = docSnap.data();
 
-    if (data.priorityOrder !== undefined) return; // skip if already migrated
+    //if (data.priorityOrder !== undefined) return; // skip if already migrated
 
     let priorityOrder = 2;
 
-    if (data.priority === "High") priorityOrder = 0;
-    if (data.priority === "Medium") priorityOrder = 1;
-    if (data.priority === "Low") priorityOrder = 2;
+    if (data.priority === "high") priorityOrder = 0;
+    if (data.priority === "medium") priorityOrder = 1;
+    if (data.priority === "low") priorityOrder = 2;
 
     batch.update(docSnap.ref, { priorityOrder });
   });
