@@ -18,9 +18,11 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "",
 };
 
-if (!firebaseConfig.apiKey) {
+if (!process.env.EXPO_PUBLIC_FIREBASE_API_KEY) {
   console.warn("Firebase config missing!");
 }
+console.log("🔥 ENV:", process.env.EXPO_PUBLIC_ENV);
+console.log("🔥 Firebase Project:", process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID);
 
 // const app = initializeApp(firebaseConfig);
 // export const db = getFirestore(app);
@@ -40,10 +42,6 @@ if (!firebaseConfig.apiKey) {
 // }else {
 //   console.log("🌍 Using REAL Firebase");
 // }
-
-if (!process.env.EXPO_PUBLIC_FIREBASE_API_KEY) {
-  console.log("❌ Missing Firebase env variables");
-}
 
 // ✅ App init (singleton-safe)
 const app = getApps().length === 0
