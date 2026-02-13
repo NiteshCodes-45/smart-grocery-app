@@ -14,7 +14,6 @@ import {
 import { createGroceryModel } from "./grocery.model";
 import { db } from "../firebase/firebaseConfig";
 import { useAuth } from "../store/auth-context";
-import { migratePriority } from "../migrations/migratePriority";
 
 const GroceryContext = createContext(null);
 
@@ -30,9 +29,6 @@ export function GroceryContextProvider({ children }) {
       return;
     }
 
-    //Auto-Migrate Once on Login(Remove after done)
-    //migratePriority(currentUser.uid);
-
     const unsubscribe = subscribeToGroceries(
       currentUser.uid,
       (snapshot) => {
@@ -40,7 +36,7 @@ export function GroceryContextProvider({ children }) {
           id: doc.id,
           ...doc.data(),
         }));
-
+        
         setGroceryItems(items);
         setSyncing(false);
       }
