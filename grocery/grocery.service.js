@@ -14,7 +14,7 @@ import { db } from "../firebase/firebaseConfig";
 export const subscribeToGroceries = (uid, callback) => {
   const q = query(
     collection(db, "users", uid, "groceries"),
-    orderBy("priority", "asc"),
+    orderBy("priorityOrder", "asc"),
     orderBy("updatedAt", "desc")
   );
 
