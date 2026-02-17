@@ -1,11 +1,13 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from '@expo/vector-icons/Ionicons';
-import Home from "../screens/Home";
+import { useTheme } from "../store/theme-context";
+import { useGrocery } from "../grocery/grocery-context";
 import Settings from "../screens/Settings";
 import IconButton from "../components/UI/IconButton";
 import Profile from "../screens/Profile";
-import { useTheme } from "../store/theme-context";
+import GroceryList from "../components/GroceryList";
 import ShoppingListScreen from "../components/ShoppingListScreen";
+import Dashboard from "./Dashboard";
 
 const BottomTabs = createBottomTabNavigator();
 
@@ -21,6 +23,9 @@ const categories = [
 
 export default function GroceryBottomTabs() {
   const {theme} = useTheme();
+  const { groceryItems } = useGrocery();
+  const groceryItemsCount = groceryItems.length;
+
   return (
     <BottomTabs.Navigator
       screenOptions={{
@@ -36,9 +41,21 @@ export default function GroceryBottomTabs() {
       }}
     >
       <BottomTabs.Screen
-        name="HomeTab"
+        name="DashboardTab"
         options={({ navigation }) => ({
           title: "Smart Grocery",
+          tabBarLabel: "Dashboard",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
+        })}
+      >
+        {(props) => <Dashboard />}
+      </BottomTabs.Screen>
+      <BottomTabs.Screen
+        name="HomeTab"
+        options={({ navigation }) => ({
+          title: "Grocery",
           tabBarLabel: "Grocery",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="cart" size={size} color={color} />
@@ -55,20 +72,26 @@ export default function GroceryBottomTabs() {
           ),
         })}
       >
-        {(props) => <Home {...props} categories={categories} />}
+        {(props) => (
+          <GroceryList
+            groceryItems={groceryItems}
+            categories={categories}
+            groceryItemsCount={groceryItemsCount}
+          />
+        )}
       </BottomTabs.Screen>
 
       <BottomTabs.Screen
         name="ShoppingListTab"
         options={{
           title: "Shopping List",
-          tabBarLabel: "Shopping List",
+          tabBarLabel: "Shopping",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="list" size={size} color={color} />
           ),
         }}
       >
-        {(props) => <ShoppingListScreen {...props} /> }
+        {(props) => <ShoppingListScreen {...props} />}
       </BottomTabs.Screen>
 
       <BottomTabs.Screen
@@ -81,7 +104,7 @@ export default function GroceryBottomTabs() {
           ),
         }}
       >
-        {(props) => <Profile /> }
+        {(props) => <Profile />}
       </BottomTabs.Screen>
 
       <BottomTabs.Screen

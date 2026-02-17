@@ -56,7 +56,6 @@ function Profile() {
 
   async function deleteAccountHandler() {
     const res = await deleteAccount();
-    console.log(res);
     if (res?.requiresReauth) {
       notify.error(`Re-login required, ${res.message}`);
       logoutUser();
