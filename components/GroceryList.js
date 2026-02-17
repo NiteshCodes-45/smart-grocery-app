@@ -7,11 +7,11 @@ import {
   Alert
 } from "react-native";
 import { useMemo, useState, useRef } from "react";
-
 import { useTheme } from "../store/theme-context";
 import { useNetwork } from "../store/network-context";
 import { useGrocery } from "../grocery/grocery-context";
 import { useShopping } from "../store/shopping-context";
+import { useSettings } from "../store/settings-context";
 import { useAuth } from "../store/auth-context";
 import NotFoundItem from "../components/NotFoundItem";
 import FilterGrocery from "../components/FilterGrocery";
@@ -19,15 +19,19 @@ import { useNavigation } from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Swipeable } from "react-native-gesture-handler";
 import { useNotification } from "../notifications/NotificationProvider";
+import GroceryListSkeleton from "./skeletons/GroceryListSkeleton";
 
 export default function GroceryListScreen({ groceryItems, categories }) {
   const { theme } = useTheme();
   const { isOnline } = useNetwork();
+  const { isSettingsLoading } = useSettings();
   const { removeGroceryItem, isSyncing } = useGrocery();
   const { addItemToSession, isItemInActiveSession } = useShopping();
   const navigation = useNavigation();
   const { currentUser } = useAuth();
   const notify = useNotification();
+
+  const isInitialLoading = isSyncing || isSettingsLoading;
 
   const [category, setCategory] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -125,6 +129,10 @@ export default function GroceryListScreen({ groceryItems, categories }) {
         {"\n"}Tap + to add your first item
       </NotFoundItem>
     );
+  }
+
+  if (isInitialLoading) {
+    <GroceryListSkeleton />
   }
 
   return (

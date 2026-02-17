@@ -44,10 +44,8 @@ function Profile() {
     }
   
     await updateProfile({ name, location });
-
-    Alert.alert("Success", "Profile Updated", [
-      { text: "OK", onPress: () => navigation.goBack() },
-    ]);
+    notify.success('Profile updated!');
+    navigation.goBack();  
   }
 
   function logoutProfileHandler() {
@@ -56,7 +54,6 @@ function Profile() {
 
   async function deleteAccountHandler() {
     const res = await deleteAccount();
-    console.log(res);
     if (res?.requiresReauth) {
       notify.error(`Re-login required, ${res.message}`);
       logoutUser();
