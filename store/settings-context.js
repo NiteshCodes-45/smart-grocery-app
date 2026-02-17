@@ -117,7 +117,7 @@ function getDefaultSettings() {
     defaultQty: "1",
     showOutOfStock: true,
 
-    notificationsEnabled: true,
+    notificationsEnabled: false,
     reminderTime: "08:00 AM",
     lowStockAlert: true,
 

@@ -12,6 +12,9 @@ import { ShoppingProvider } from "./store/shopping-context";
 import { NetworkProvider } from "./store/network-context";
 import { NotificationProvider } from "./notifications/NotificationProvider";
 import { ErrorBoundary } from "./ErrorBoundary";
+import EnvironmentBadge from "./components/EnvironmentBadge";
+
+import * as Notifications from 'expo-notifications';
 
 let baseTheme; 
 
@@ -32,6 +35,14 @@ function NavigationWrapper() {
       notification: theme.colors.primary,
     },
   };
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
 
   return (
     <NavigationContainer theme={navigationTheme}>
@@ -61,6 +72,7 @@ export default function App() {
                         <ShoppingProvider>
                           <NotificationProvider>
                             <NavigationWrapper />
+                            <EnvironmentBadge />
                           </NotificationProvider>
                         </ShoppingProvider>
                       </GroceryContextProvider>

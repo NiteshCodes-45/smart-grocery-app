@@ -46,7 +46,7 @@ export default function OnboardingGuide({ onFinish }) {
         onPress={() => onFinish("ADD_GROCERY")}
       >
         <Text style={styles.primaryBtnText}>
-          Add my first grocery
+          Add My First Grocery
         </Text>
       </Pressable>
     </View>

@@ -4,6 +4,12 @@ import { useTheme } from "../store/theme-context";
 import { useSettings } from "../store/settings-context";
 import { useNavigation } from "@react-navigation/native";
 
+import {
+  requestNotificationPermission,
+  scheduleDailyReminder,
+  cancelAllReminders,
+} from "../utils/notification.service";
+
 import Section from "../components/settings/Section";
 import InputRow from "../components/settings/InputRow";
 import SwitchRow from "../components/settings/SwitchRow";
@@ -16,12 +22,25 @@ export default function Settings() {
   const navigation = useNavigation();
   const { settings, updateSetting } = useSettings();
   const { themeMode, setThemeMode, theme } = useTheme();
-  
+
   /* ------------------ LOAD THEME ------------------ */
   useEffect(() => {
     if (!settings) return;
     setThemeMode(settings.theme);
   }, [settings?.theme]);
+
+  const handleNotificationToggle = async (value) => {
+    updateSetting("notificationsEnabled", value);
+
+    if (value) {
+      const granted = await requestNotificationPermission();
+      if (!granted) return;
+
+      await scheduleDailyReminder(settings.reminderTime);
+    } else {
+      await cancelAllReminders();
+    }
+  };
 
   /* ------------------ UI ------------------ */
 
@@ -80,13 +99,19 @@ export default function Settings() {
         <SwitchRow
           label="Enable Notifications"
           value={settings.notificationsEnabled}
-          onValueChange={(value) => updateSetting("notificationsEnabled", value)}
+          onValueChange={handleNotificationToggle}
         />
 
         <InputRow
           label="Reminder Time"
           value={settings.reminderTime}
-          onChangeText={(value) => updateSetting("setReminderTime", value)}
+          onChangeText={async (value) => {
+            updateSetting("reminderTime", value);
+
+            if (settings.notificationsEnabled) {
+              await scheduleDailyReminder(value);
+            }
+          }}
         />
 
         {/* <SwitchRow

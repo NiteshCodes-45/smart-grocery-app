@@ -17,9 +17,7 @@ function Home({ categories, navigation }) {
 
   let content = null;
 
-  if (isInitialLoading) {
-    content = <GroceryListSkeleton />;
-  } else if (
+  if (
     settings?.hasSeenOnboarding === false &&
     groceryItems.length === 0
   ) {
@@ -33,6 +31,8 @@ function Home({ categories, navigation }) {
         }}
       />
     );
+  } else if (isInitialLoading) {
+    content = <GroceryListSkeleton />;
   } else if (groceryItems.length > 0) {
     content = (
       <GroceryList
