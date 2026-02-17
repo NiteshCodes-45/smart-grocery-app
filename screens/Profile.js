@@ -44,10 +44,8 @@ function Profile() {
     }
   
     await updateProfile({ name, location });
-
-    Alert.alert("Success", "Profile Updated", [
-      { text: "OK", onPress: () => navigation.goBack() },
-    ]);
+    notify.success('Profile updated!');
+    navigation.goBack();  
   }
 
   function logoutProfileHandler() {
