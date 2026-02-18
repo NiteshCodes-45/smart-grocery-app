@@ -2,7 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import { ThemeProvider, useTheme } from "./store/theme-context";
 import { DefaultTheme, DarkTheme, NavigationContainer } from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { StyleSheet, ImageBackground, View, Text } from "react-native";
+import { StyleSheet, ImageBackground } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GroceryContextProvider } from "./grocery/grocery-context";
 import RootNavigation from "./screens/RootNavigation";
@@ -15,8 +15,11 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import EnvironmentBadge from "./components/EnvironmentBadge";
 
 import * as Notifications from 'expo-notifications';
+import * as SplashScreen from "expo-splash-screen";
 
 let baseTheme; 
+
+SplashScreen.preventAutoHideAsync();
 
 function NavigationWrapper() {
   const { themeMode, theme } = useTheme();

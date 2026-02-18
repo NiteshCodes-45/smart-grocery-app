@@ -8,6 +8,7 @@ import Profile from "../screens/Profile";
 import GroceryList from "../components/GroceryList";
 import ShoppingListScreen from "../components/ShoppingListScreen";
 import Dashboard from "./Dashboard";
+import { Image } from "react-native";
 
 const BottomTabs = createBottomTabNavigator();
 
@@ -47,6 +48,13 @@ export default function GroceryBottomTabs() {
           tabBarLabel: "Dashboard",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
+          ),
+          headerLeft: ({ tintColor }) => (
+            <Image
+              source={require("../assets/logo/logo-48.png")}
+              style={{height:28, marginHorizontal:3}}
+              resizeMode="contain"
+            />
           ),
         })}
       >

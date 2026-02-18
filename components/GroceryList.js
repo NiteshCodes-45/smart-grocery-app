@@ -31,7 +31,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
   const { currentUser } = useAuth();
   const notify = useNotification();
 
-  const isInitialLoading = isSyncing || isSettingsLoading;
+  const isInitialLoading = isSettingsLoading || isSyncing;
 
   const [category, setCategory] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -132,7 +132,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
   }
 
   if (isInitialLoading) {
-    <GroceryListSkeleton />
+    return <GroceryListSkeleton />;
   }
 
   return (
@@ -186,7 +186,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
                       isItemInActiveSession(item.id) ? "#4CAF50" : "#4CAF50"
                     }
                   />
-                  <Text style={styles.addText}>
+                  <Text style={[styles.addText, {color: theme.colors.text}]}>
                     {isItemInActiveSession(item.id) ? "Added" : "Add"}
                   </Text>
                 </Pressable>

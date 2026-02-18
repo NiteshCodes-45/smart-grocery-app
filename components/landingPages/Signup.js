@@ -61,6 +61,7 @@ function Signup() {
       />
       <InputRow
         label="Password"
+        type="password"
         value={password}
         onChangeText={setPassword}
         keyboardType="password"
