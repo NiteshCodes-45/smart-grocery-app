@@ -6,10 +6,10 @@ import { useShopping } from "../store/shopping-context";
 import { useTheme } from "../store/theme-context";
 import { useSettings } from "../store/settings-context";
 import OnboardingGuide from "../components/landingPages/OnboardingGuide";
-import GroceryListSkeleton from "../components/skeletons/GroceryListSkeleton";
 import NotFoundItem from "../components/NotFoundItem";
 import { useAuth } from "../store/auth-context";
 import { useNavigation } from "@react-navigation/native";
+import DashboardSkeleton from "../components/skeletons/DashboardSkeleton";
 
 function Dashboard() {
   const { theme } = useTheme();
@@ -62,7 +62,7 @@ function Dashboard() {
   // High priority groceries
   const highPriorityItems = useMemo(() => {
     return groceryItems
-      .filter(item => item.priorityOrder === 0 && !item.checked)
+      .filter(item => item.priorityOrder === 0)
       .slice(0, 3);
   }, [groceryItems]);
 
@@ -81,7 +81,7 @@ function Dashboard() {
   }
 
   if (isInitialLoading) {
-    return <GroceryListSkeleton />;
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -90,7 +90,6 @@ function Dashboard() {
     >
       <Text style={[styles.greeting, { color: theme.colors.text }]}>
         {greeting}, {currentUser?.displayName || "User"}{" "}
-        <Ionicons name="happy-outline" size={20} />
       </Text>
 
       {/* Active Session Card */}
