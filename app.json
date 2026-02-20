@@ -2,7 +2,7 @@
   "expo": {
     "name": "Smart Grocery",
     "slug": "SmartGroceryApp",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,7 +17,7 @@
     },
     "android": {
       "package": "com.neets.smartgrocery",
-      "versionCode": 1,
+      "versionCode": 3,
       "backgroundColor": "#ffffff",
       "statusBar": {
         "backgroundColor": "#ffffff"
