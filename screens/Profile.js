@@ -120,19 +120,7 @@ function Profile() {
           Update
         </Buttons>
       </Section>
-      <Section>
-        <Pressable onPress={() => navigation.navigate("Shopping History")}>
-          <Text
-            style={{
-              color: theme.colors.primary,
-              fontSize: 16,
-              fontWeight: "500",
-            }}
-          >
-            View Shopping History
-          </Text>
-        </Pressable>
-      </Section>
+      
       <View style={styles.logoutContainer}>
         <Buttons pressBtn={logoutProfileHandler} btnColor="#f80404a8">
           LOGOUT

@@ -2,13 +2,13 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from "../store/theme-context";
 import { useGrocery } from "../grocery/grocery-context";
-import Settings from "../screens/Settings";
 import IconButton from "../components/UI/IconButton";
 import Profile from "../screens/Profile";
 import GroceryList from "../components/GroceryList";
 import ShoppingListScreen from "../components/ShoppingListScreen";
 import Dashboard from "./Dashboard";
 import { Image } from "react-native";
+import SessionHistoryScreen from "./SessionHistoryScreen";
 
 const BottomTabs = createBottomTabNavigator();
 
@@ -103,30 +103,41 @@ export default function GroceryBottomTabs() {
       </BottomTabs.Screen>
 
       <BottomTabs.Screen
-        name="Profile"
+        name="HistoryTab"
         options={{
+          title: "History",
+          tabBarLabel: "History",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="time" size={size} color={color} />
+          ),
+        }}
+      >
+        {(props) => <SessionHistoryScreen {...props} />}
+      </BottomTabs.Screen>
+
+      <BottomTabs.Screen
+        name="Profile"
+        options={({ navigation }) => ({
           title: "Profile",
           tabBarLabel: "Profile",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
-        }}
+          headerRight: ({ tintColor }) => (
+            <IconButton
+              icon="settings"
+              size={25}
+              color={tintColor}
+              onPress={() => {
+                navigation.navigate("Settings")
+              }}
+            />
+          ),
+        })}
       >
         {(props) => <Profile />}
       </BottomTabs.Screen>
 
-      <BottomTabs.Screen
-        name="SettingsTab"
-        options={{
-          title: "Settings",
-          tabBarLabel: "Settings",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
-          ),
-        }}
-      >
-        {(props) => <Settings />}
-      </BottomTabs.Screen>
     </BottomTabs.Navigator>
   );
 }
