@@ -93,12 +93,12 @@ function Dashboard() {
       </Text>
 
       {/* Active Session Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Active Shopping Session</Text>
+      <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>Active Shopping Session</Text>
 
         {activeSession ? (
           <>
-            <Text style={styles.cardText}>
+            <Text style={[styles.cardText, { color: theme.colors.text }]}>
               {boughtCount} / {totalCount} items purchased
             </Text>
 
@@ -116,7 +116,7 @@ function Dashboard() {
             <Text style={styles.cardText}>No active shopping session</Text>
 
             <TouchableOpacity
-              style={styles.primaryButton}
+              style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}
               onPress={() => navigation.navigate("HomeTab")}
             >
               <Text style={styles.primaryButtonText}>Start Shopping</Text>
@@ -126,20 +126,20 @@ function Dashboard() {
       </View>
 
       {/* Monthly Overview */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>This Month</Text>
-        <Text style={styles.cardAmount}>₹ {monthlyTotal.toFixed(2)}</Text>
+      <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>This Month</Text>
+        <Text style={[styles.cardAmount, { color: theme.colors.text }]}>₹ {monthlyTotal.toFixed(2)}</Text>
       </View>
 
       {/* High Priority Items */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>High Priority Items</Text>
+      <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>High Priority Items</Text>
 
         {highPriorityItems.length === 0 ? (
-          <Text style={styles.cardText}>No high priority items 🎉</Text>
+          <Text style={[styles.cardText, { color: theme.colors.text }]}>No high priority items 🎉</Text>
         ) : (
           highPriorityItems.map((item) => (
-            <Text key={item.id} style={styles.listItem}>
+            <Text key={item.id} style={[styles.listItem, { color: theme.colors.text }]}>
               • {item.name}
             </Text>
           ))
@@ -147,8 +147,8 @@ function Dashboard() {
       </View>
 
       {/* Quick Actions */}
-      <View style={[styles.card]}>
-        <Text style={styles.cardTitle}>Quick Actions</Text>
+      <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>Quick Actions</Text>
 
         <TouchableOpacity
           style={styles.secondaryButton}

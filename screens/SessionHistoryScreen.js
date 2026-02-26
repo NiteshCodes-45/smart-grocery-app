@@ -105,6 +105,102 @@ export default function SessionHistoryScreen({ navigation }) {
     return Object.values(grouped).sort((a, b) => b.monthDate - a.monthDate);
   }, [completedSessions]);
 
+  const monthlyTotalsMap = useMemo(() => {
+    const map = {};
+
+    completedSessions.forEach((session) => {
+      const date = toDate(session.finishedAt);
+      const key = `${date.getFullYear()}-${date.getMonth()}`;
+
+      if (!map[key]) map[key] = 0;
+
+      map[key] += getSessionTotal(session.id);
+    });
+
+    return map;
+  }, [completedSessions]);
+
+  const trendData = useMemo(() => {
+    const now = new Date();
+    const currentKey = `${now.getFullYear()}-${now.getMonth()}`;
+
+    const prevDate = new Date(now.getFullYear(), now.getMonth() - 1);
+    const prevKey = `${prevDate.getFullYear()}-${prevDate.getMonth()}`;
+
+    const currentTotal = monthlyTotalsMap[currentKey] || 0;
+    const previousTotal = monthlyTotalsMap[prevKey] || 0;
+
+    if (!previousTotal) {
+      return {
+        insufficient: true,
+      };
+    }
+
+    const change = ((currentTotal - previousTotal) / previousTotal) * 100;
+
+    return {
+      insufficient: false,
+      percentage: change.toFixed(1),
+      increased: change > 0,
+    };
+  }, [monthlyTotalsMap]);
+
+  console.log("Trend Data:", trendData, "Monthly Totals:", monthlyTotalsMap);
+
+  const consistentItem = useMemo(() => {
+    if (completedSessions.length === 0) return null;
+
+    const frequency = {};
+
+    completedSessions.forEach((session) => {
+      const itemsInSession = sessionItems.filter(
+        (item) => item.sessionId === session.id,
+      );
+
+      const uniqueItems = new Set(itemsInSession.map((i) => i.name));
+
+      uniqueItems.forEach((name) => {
+        frequency[name] = (frequency[name] || 0) + 1;
+      });
+    });
+
+    const sorted = Object.entries(frequency).sort((a, b) => b[1] - a[1]);
+
+    if (sorted.length === 0) return null;
+
+    const [name, count] = sorted[0];
+
+    const percentage = ((count / completedSessions.length) * 100).toFixed(0);
+
+    return { name, percentage };
+  }, [completedSessions, sessionItems]);
+
+  const dominantCategory = useMemo(() => {
+    const categoryTotals = {};
+
+    sessionItems.forEach((item) => {
+      if (!item.price) return;
+
+      categoryTotals[item.category] =
+        (categoryTotals[item.category] || 0) + Number(item.price);
+    });
+
+    const sorted = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
+
+    if (sorted.length === 0) return null;
+
+    const [category, total] = sorted[0];
+
+    const overallTotal = Object.values(categoryTotals).reduce(
+      (sum, val) => sum + val,
+      0,
+    );
+
+    const percentage = ((total / overallTotal) * 100).toFixed(0);
+
+    return { category, percentage };
+  }, [sessionItems]);
+
   const now = new Date();
   const thisMonthSpent = completedSessions
     .filter((s) => {
@@ -130,69 +226,112 @@ export default function SessionHistoryScreen({ navigation }) {
   /* ================= RENDER ================= */
 
   return (
-    <SectionList
-      sections={sections}
-      keyExtractor={(item) => item.id}
-      contentContainerStyle={{ paddingBottom: 100 }}
-      ListHeaderComponent={
-        <HistoryHeader
-          theme={theme}
-          curr={curr}
-          totalSpent={totalSpent}
-          thisMonthSpent={thisMonthSpent}
-          totalSessions={totalSessions}
-          avgPerSession={avgPerSession}
-          topItems={topItems}
-        />
-      }
-      renderSectionHeader={({ section }) => {
-        const monthTotal = section.data.reduce(
-          (sum, s) => sum + getSessionTotal(s.id),
-          0,
-        );
+    <>
+      <View style={styles.headerTitleContainer}>
+        <Text style={[styles.title, { color: theme.colors.text }]}>
+          Your Shopping History
+        </Text>
+        <Text style={styles.subtitle}>Track your shopping insights</Text>
+      </View>
+      <View
+        style={[styles.insightCard, { backgroundColor: theme.colors.card }]}
+      >
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Smart Insights</Text>
 
-        return (
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionHeaderText}>
-              {section.title.toUpperCase()}
-            </Text>
-            <Text style={styles.sectionTotal}>
-              {curr} {monthTotal.toFixed(2)}
-            </Text>
-          </View>
-        );
-      }}
-      renderItem={({ item }) => {
-        const total = getSessionTotal(item.id);
+        {consistentItem && (
+          <Text style={[styles.insightText, { color: theme.colors.text }]}>
+            {consistentItem.name.charAt(0).toUpperCase() +
+              consistentItem.name.slice(1)}{" "}
+            appears in {consistentItem.percentage}% of sessions.
+          </Text>
+        )}
 
-        return (
-          <Pressable
-            onPress={() =>
-              navigation.navigate("Session Details", {
-                sessionId: item.id,
-              })
-            }
-          >
-            <View
-              style={[
-                styles.sessionCard,
-                { backgroundColor: theme.colors.card },
-              ]}
-            >
-              <Text style={[styles.sessionDate, { color: theme.colors.text }]}>
-                {formatDate(toDate(item.finishedAt))}
+        {dominantCategory && (
+          <Text style={[styles.insightText, { color: theme.colors.text }]}>
+            {dominantCategory.category.charAt(0).toUpperCase() +
+              dominantCategory.category.slice(1)}{" "}
+            accounts for {dominantCategory.percentage}% of total spend.
+          </Text>
+        )}
+
+        {trendData?.insufficient && (
+          <Text style={[styles.insightTextWithNoData, { color: theme.colors.text }]}>
+            Not enough data to calculate monthly trend yet.
+          </Text>
+        )}
+        {!trendData?.insufficient && trendData && (
+          <Text style={[styles.insightText, { color: theme.colors.text }]}>
+            Spending {trendData.increased ? "increased" : "decreased"}{" "}
+            {Math.abs(trendData.percentage)}% compared to last month.
+          </Text>
+        )}
+      </View>
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        ListHeaderComponent={
+          <HistoryHeader
+            theme={theme}
+            curr={curr}
+            totalSpent={totalSpent}
+            thisMonthSpent={thisMonthSpent}
+            totalSessions={totalSessions}
+            avgPerSession={avgPerSession}
+            topItems={topItems}
+          />
+        }
+        renderSectionHeader={({ section }) => {
+          const monthTotal = section.data.reduce(
+            (sum, s) => sum + getSessionTotal(s.id),
+            0,
+          );
+
+          return (
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionHeaderText, { color: theme.colors.text }]}>
+                {section.title.toUpperCase()}
               </Text>
-
-              <Text
-                style={[styles.sessionAmount, { color: theme.colors.text }]}
-              >
-                {curr} {total.toFixed(2)}
+              <Text style={[styles.sectionTotal, { color: theme.colors.text }]}>
+                {curr} {monthTotal.toFixed(2)}
               </Text>
             </View>
-          </Pressable>
-        );
-      }}
-    />
+          );
+        }}
+        renderItem={({ item }) => {
+          const total = getSessionTotal(item.id);
+
+          return (
+            <Pressable
+              onPress={() =>
+                navigation.navigate("Session Details", {
+                  sessionId: item.id,
+                })
+              }
+            >
+              <View
+                style={[
+                  styles.sessionCard,
+                  { backgroundColor: theme.colors.card },
+                ]}
+              >
+                <Text
+                  style={[styles.sessionDate, { color: theme.colors.text }]}
+                >
+                  {formatDate(toDate(item.finishedAt))}
+                </Text>
+
+                <Text
+                  style={[styles.sessionAmount, { color: theme.colors.text }]}
+                >
+                  {curr} {total.toFixed(2)}
+                </Text>
+              </View>
+            </Pressable>
+          );
+        }}
+      />
+    </>
   );
 }
 
@@ -207,11 +346,6 @@ function HistoryHeader({
 }) {
   return (
     <View style={{ padding: 20 }}>
-      <Text style={[styles.title, { color: theme.colors.text }]}>
-        Your Shopping History
-      </Text>
-      <Text style={styles.subtitle}>Track your shopping insights</Text>
-
       {/* Stat Cards */}
       <FlatList
         horizontal
@@ -242,7 +376,7 @@ function HistoryHeader({
       <View
         style={[styles.topItemsCard, { backgroundColor: theme.colors.card }]}
       >
-        <Text style={styles.sectionTitle}>Top Purchased</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Top Purchased</Text>
 
         {topItems.length === 0 ? (
           <Text style={styles.emptyText}>No items purchased yet.</Text>
@@ -270,7 +404,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "700",
   },
 
@@ -372,6 +506,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     letterSpacing: 1,
+    color: "#504c4c",
+  },
+
+  insightCard: {
+    padding: 18,
+    borderRadius: 18,
+    marginHorizontal: 20,
+    elevation: 2,
+    marginBottom: 15,
+    borderBottomWidth: 4,
+    borderColor: "#4CAF50",
+  },
+
+  insightText: {
+    fontSize: 13,
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+
+  headerTitleContainer: {
+    paddingHorizontal: 25,
+    marginTop: 20,
+  },
+
+  insightTextWithNoData: {
+    fontSize: 13,
+    fontStyle: "italic",
     color: "#504c4c",
   },
 });
