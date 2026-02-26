@@ -16,6 +16,8 @@ export default function SessionDetailScreen({ route }) {
     item => item.sessionId === sessionId
   );
 
+  console.log("Each session - ", items);
+
   return (
     <FlatList
       data={items}

@@ -1,6 +1,7 @@
-import { View, Text, StyleSheet, TextInput, LayoutAnimation } from "react-native";
+import { View, Text, StyleSheet, TextInput, LayoutAnimation, TouchableOpacity } from "react-native";
 import Buttons from "./Buttons";
 import CategoryDropdown from "./CategoryDrodown";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function GroceryFilters({
   theme,
@@ -44,22 +45,31 @@ export default function GroceryFilters({
 
       {/* Search */}
       <View style={styles.filterTop}>
-        <TextInput
-          placeholder="Search Grocery Items..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholderTextColor={theme.colors.text}
-          style={[
-            styles.searchInput,
-            {
-              backgroundColor: theme.colors.card,
-              color: theme.colors.text,
-              padding: 10,
-              borderRadius: 8,
-              borderColor: theme.colors.border,
-            },
-          ]}
-        />
+        <View style={styles.searchContainer}>
+          <TextInput
+            placeholder="Search Grocery Items..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholderTextColor={theme.colors.text}
+            style={[
+              styles.searchInput,
+              {
+                backgroundColor: theme.colors.card,
+                color: theme.colors.text,
+                borderColor: theme.colors.border,
+              },
+            ]}
+          />
+
+          {searchQuery.length > 0 && (
+            <TouchableOpacity
+              style={styles.clearButton}
+              onPress={() => setSearchQuery("")}
+            >
+              <Ionicons name="close-circle" size={19} color="#999" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Filter buttons */}
@@ -148,8 +158,26 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     borderRadius: 10,
   },
+  searchContainer: {
+    position: "relative",
+    justifyContent: "center",
+  },
+
   searchInput: {
     fontSize: 14,
     borderWidth: 1,
+    paddingVertical: 10,
+    paddingLeft: 10,
+    paddingRight: 40,
+    borderRadius: 8,
+  },
+
+  clearButton: {
+    position: "absolute",
+    right: 10,
+    height: 26,
+    width: 26,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

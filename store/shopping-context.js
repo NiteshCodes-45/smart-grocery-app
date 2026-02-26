@@ -114,6 +114,16 @@ export function ShoppingProvider({ children }) {
         item.groceryId === grocery.id
     );
 
+    const lastItem = sessionItems
+      .filter(i => i.groceryId === grocery.id && i.price)
+      .sort((a, b) => {
+        const aDate = a.updatedAt?.toDate?.() || 0;
+        const bDate = b.updatedAt?.toDate?.() || 0;
+        return bDate - aDate;
+      })[0];
+
+    const lastPrice = lastItem ? lastItem.price : "";  
+
     if (exists) return;
 
     await addDoc(
@@ -125,7 +135,7 @@ export function ShoppingProvider({ children }) {
         category: grocery.category,
         unit: grocery.unit,
         qty: grocery.qty || 1,
-        price: "",
+        price: lastPrice,
         isBought: false,
         updatedAt: serverTimestamp(),
       }

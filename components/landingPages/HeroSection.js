@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#D8F3DC",
     paddingHorizontal: 24,
     paddingTop: 15,
-    paddingBottom: 30,
+    paddingBottom: 10,
     alignItems: "center",
   },
 
@@ -174,8 +174,8 @@ const styles = StyleSheet.create({
 
   /* LOGO */
   logo: {
-    width: 90,
-    height: 90,
+    width: 65,
+    height: 65,
     marginBottom: 12,
   },
 
