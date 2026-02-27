@@ -8,6 +8,8 @@ export const LightTheme = {
     text: "#1B4332",
     btnText: "#FFFFFF",
     border: "#FFFFFF",
+    skeletonBase: "#e0e0e0",
+    skeletonHighlight: "#c3d0beff",
   },
 };
 
@@ -21,5 +23,7 @@ export const DarkTheme = {
     text: "#FFFFFF",
     btnText: "#FFFFFF",
     border: "#333",
+    skeletonBase: "#333",
+    skeletonHighlight: "#4CAF50",
   },
 };

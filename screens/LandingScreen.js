@@ -1,117 +1,154 @@
-import { useState, useRef } from "react";
 import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import HeroSection from "../components/landingPages/HeroSection";
 
-export default function LandingScreen() {
-  const scrollRef = useRef(null);
+export default function LandingScreen({navigation}) {
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      ref={scrollRef}
+      showsVerticalScrollIndicator={false}
     >
-      {/* HERO SECTION */}
-      <HeroSection />
+      {/* ---------------- HERO ---------------- */}
+      <View style={styles.hero}>
+        <Text style={styles.brand}>SMART GROCERY</Text>
 
-      {/* VALUE SECTION */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Why Smart Grocery?</Text>
+        <Text style={styles.heroTitle}>
+          Organize. Track. Understand.
+        </Text>
 
-        <ValueItem
-          icon="checkmark-circle-outline"
-          text="Never forget what to buy"
-        />
-        <ValueItem icon="leaf-outline" text="Seasonal fruits & vegetables" />
-        <ValueItem icon="list-outline" text="Simple Buy & Bought tracking" />
-        <ValueItem icon="cloud-offline-outline" text="Works offline" />
+        <Text style={styles.heroSubtitle}>
+          Smarter grocery planning with intelligent history tracking
+          and spending insights.
+        </Text>
+
+        <View style={styles.heroButtons}>
+          <Pressable
+            style={styles.primaryBtn}
+            onPress={() => navigation.navigate("Login")}
+          >
+            <Text style={styles.primaryBtnText}>
+              Get Started
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.secondaryBtn}
+            onPress={() => navigation.navigate("Register")}
+          >
+            <Text style={styles.secondaryBtnText}>
+              Create Account
+            </Text>
+          </Pressable>
+        </View>
       </View>
 
-      {/* FEATURES */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Features</Text>
+      {/* ---------------- VALUE STRIP ---------------- */}
+      <View style={styles.valueStrip}>
+        <ValueItem text="Offline Ready" />
+        <ValueItem text="Smart Insights" />
+        <ValueItem text="History Tracking" />
+        <ValueItem text="Seasonal Suggestions" />
+      </View>
 
-        <FeatureRow
+      {/* ---------------- CORE BENEFITS ---------------- */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Built for Smarter Households</Text>
+
+        <Benefit
           icon="cart-outline"
           title="Smart Lists"
-          desc="Create, edit and manage groceries easily"
+          desc="Create and manage grocery lists in seconds."
         />
 
-        <FeatureRow
-          icon="sunny-outline"
-          title="Seasonal Suggestions"
-          desc="Eat fresh with season-based produce"
-        />
-
-        {/* <FeatureRow
-          icon="location-outline"
-          title="Location Based"
-          desc="Personalized to your area"
-        /> */}
-        <FeatureRow
-          title="Shopping History"
-          desc="Track your spending over time"
+        <Benefit
           icon="time-outline"
+          title="Automatic History"
+          desc="Track sessions and spending automatically."
         />
 
-        <FeatureRow
-          icon="checkbox-outline"
-          title="Simple Tracking"
-          desc="Track what you bought at a glance"
+        <Benefit
+          icon="analytics-outline"
+          title="Intelligent Insights"
+          desc="Understand trends and optimize your shopping."
         />
       </View>
 
-      {/* HOW IT WORKS */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>How it works</Text>
+      {/* ---------------- INTELLIGENCE ---------------- */}
+      <View style={styles.intelligenceSection}>
+        <Text style={styles.sectionTitle}>
+          Understand Your Spending
+        </Text>
 
-        <Step number="1" text="Login with your email" />
-        <Step number="2" text="Create your shopping list" />
-        <Step number="3" text="Track purchases & history" />
+        <Text style={styles.intelligenceText}>
+          • Monthly spending comparisons
+        </Text>
+        <Text style={styles.intelligenceText}>
+          • Most consistent purchases
+        </Text>
+        <Text style={styles.intelligenceText}>
+          • Category dominance insights
+        </Text>
+        <Text style={styles.intelligenceText}>
+          • Shopping pattern detection
+        </Text>
       </View>
 
-      {/* CTA */}
-      <View style={styles.cta}>
-        <Text style={styles.ctaText}>Get started in seconds</Text>
+      {/* ---------------- HOW IT WORKS ---------------- */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>How It Works</Text>
 
-        {/* SCROLL TO TOP OF PAGE */}
+        <Step number="1" text="Login securely" />
+        <Step number="2" text="Create your grocery list" />
+        <Step number="3" text="Track and analyze purchases" />
+      </View>
+
+      {/* ---------------- FINAL CTA ---------------- */}
+      <View style={styles.finalCta}>
+        <Text style={styles.finalCtaTitle}>
+          Start organizing smarter today.
+        </Text>
+
         <Pressable
-          style={styles.primaryBtn}
-          onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
+          style={styles.primaryBtnLarge}
+          onPress={() => navigation.navigate("Login")}
         >
-          <View
-            style={styles.bottomLoginBtnContent}
-          >
-            <Ionicons name="log-in-outline" size={20} color="#2F6F4E" />
-            <Text style={styles.primaryBtnText}>Login with Email</Text>
-          </View>
+          <Text style={styles.primaryBtnText}>
+            Get Started Free
+          </Text>
         </Pressable>
       </View>
 
-      {/* FOOTER */}
-      <Text style={styles.footer}>Made with ❤️ for smart households</Text>
+      {/* ---------------- FOOTER ---------------- */}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          Smart Grocery v1.2.0
+        </Text>
+        <Text style={styles.footerSub}>
+          Organized households. Smarter decisions.
+        </Text>
+      </View>
     </ScrollView>
   );
 }
 
-/* ---------- SMALL UI HELPERS ---------- */
+/* ---------------- SMALL COMPONENTS ---------------- */
 
-function ValueItem({ icon, text }) {
+function ValueItem({ text }) {
   return (
-    <View style={styles.valueRow}>
-      <Ionicons name={icon} size={20} color="#2F6F4E" />
+    <View style={styles.valueItem}>
+      <Ionicons name="checkmark-circle-outline" size={16} color="#2F6F4E" />
       <Text style={styles.valueText}>{text}</Text>
     </View>
   );
 }
 
-function FeatureRow({ icon, title, desc }) {
+function Benefit({ icon, title, desc }) {
   return (
-    <View style={styles.featureRow}>
-      <Ionicons name={icon} size={24} color="#2F6F4E" />
+    <View style={styles.benefitRow}>
+      <Ionicons name={icon} size={22} color="#2F6F4E" />
       <View style={{ flex: 1 }}>
-        <Text style={styles.featureTitle}>{title}</Text>
-        <Text style={styles.featureDesc}>{desc}</Text>
+        <Text style={styles.benefitTitle}>{title}</Text>
+        <Text style={styles.benefitDesc}>{desc}</Text>
       </View>
     </View>
   );
@@ -128,67 +165,133 @@ function Step({ number, text }) {
   );
 }
 
-/* ---------- STYLES ---------- */
+/* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F3F7F4",
+    backgroundColor: "#F5F7F6",
   },
   content: {
-    paddingVertical: 40,
+    paddingVertical: 50,
+    paddingHorizontal: 24,
   },
 
-  /* CARD */
-  card: {
-    backgroundColor: "#FFFFFF",
-    marginHorizontal: 16,
-    marginTop: 16,
-    padding: 16,
-    borderRadius: 14,
-    elevation: 2,
+  /* HERO */
+  hero: {
+    marginBottom: 40,
   },
-  sectionTitle: {
-    fontSize: 18,
+  brand: {
+    fontSize: 12,
+    letterSpacing: 2,
+    color: "#2F6F4E",
+    marginBottom: 10,
     fontWeight: "600",
+  },
+  heroTitle: {
+    fontSize: 30,
+    fontWeight: "700",
     color: "#1B4332",
-    marginBottom: 12,
+    marginBottom: 14,
+  },
+  heroSubtitle: {
+    fontSize: 15,
+    color: "#555",
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  heroButtons: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  primaryBtn: {
+    backgroundColor: "#2F6F4E",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+  },
+  primaryBtnLarge: {
+    backgroundColor: "#2F6F4E",
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 16,
+  },
+  primaryBtnText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+  },
+  secondaryBtn: {
+    borderWidth: 1,
+    borderColor: "#2F6F4E",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+  },
+  secondaryBtnText: {
+    color: "#2F6F4E",
+    fontWeight: "600",
   },
 
-  /* VALUE */
-  valueRow: {
+  /* VALUE STRIP */
+  valueStrip: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginBottom: 40,
+  },
+  valueItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
-    gap: 8,
+    gap: 6,
   },
   valueText: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#444",
   },
 
-  /* FEATURES */
-  featureRow: {
+  /* SECTION */
+  section: {
+    marginBottom: 40,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 20,
+    color: "#1B4332",
+  },
+
+  /* BENEFITS */
+  benefitRow: {
     flexDirection: "row",
     gap: 12,
-    marginBottom: 14,
+    marginBottom: 18,
   },
-  featureTitle: {
+  benefitTitle: {
     fontSize: 15,
     fontWeight: "600",
     color: "#1B4332",
   },
-  featureDesc: {
+  benefitDesc: {
     fontSize: 13,
     color: "#555",
+  },
+
+  /* INTELLIGENCE */
+  intelligenceSection: {
+    marginBottom: 40,
+  },
+  intelligenceText: {
+    fontSize: 14,
+    marginBottom: 8,
+    color: "#444",
   },
 
   /* STEPS */
   stepRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
     gap: 12,
+    marginBottom: 14,
   },
   stepCircle: {
     width: 28,
@@ -207,32 +310,30 @@ const styles = StyleSheet.create({
     color: "#444",
   },
 
-  /* CTA */
-  cta: {
-    marginTop: 24,
+  /* FINAL CTA */
+  finalCta: {
+    marginBottom: 40,
     alignItems: "center",
   },
-  ctaText: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
+  finalCtaTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 20,
     color: "#1B4332",
+    textAlign: "center",
   },
 
   /* FOOTER */
   footer: {
-    textAlign: "center",
-    marginVertical: 24,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  footerText: {
     fontSize: 12,
     color: "#777",
   },
-  bottomLoginBtnContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#D8F3DC",
+  footerSub: {
+    fontSize: 12,
+    color: "#999",
   },
 });

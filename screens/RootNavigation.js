@@ -1,10 +1,9 @@
+import { useEffect } from "react";
 import LandingScreen from "../screens/LandingScreen";
 import AppNavigator from "../screens/AppNavigator";
-//import SplashScreen from "../screens/SplashScreen";
 import { useAuth } from "../store/auth-context";
-
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+//import SplashScreen from "../screens/SplashScreen";
 
 export default function RootNavigation() {
   const { isSessionLoading, isAuthenticated } = useAuth();
@@ -17,11 +16,6 @@ export default function RootNavigation() {
 
   if (isSessionLoading) {
     return null; // important: render nothing
-  }
-
-  // Only AFTER loading is finished
-  if (!isAuthenticated) {
-    return <LandingScreen />;
   }
 
   return <AppNavigator />;

@@ -92,6 +92,12 @@ function getQuantityStep(unit, unitType) {
   return 1;
 }
 
+//validate email
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(String(email).toLowerCase());
+}
+
 export {
   seasons,
   UNITS,
@@ -104,4 +110,5 @@ export {
   UNIT_TYPE_MAP,
   getUnitType,
   getQuantityStep,
+  validateEmail,
 };

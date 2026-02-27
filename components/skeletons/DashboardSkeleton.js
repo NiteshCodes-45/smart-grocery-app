@@ -7,33 +7,33 @@ export default function DashboardSkeleton() {
   return (
     <>
       <View style={styles.container}>
-        <View style={[styles.line, { backgroundColor: theme.colors.border }]} />
+        <View style={[styles.line, { backgroundColor: theme.colors.skeletonBase }]} />
       </View>
       
-      <View style={[styles.semiContainer, { backgroundColor: theme.colors.border }]}>
-        <View style={[styles.line, { backgroundColor: theme.colors.background }]} />
+      <View style={[styles.semiContainer, { backgroundColor: theme.colors.skeletonBase }]}>
+        <View style={[styles.line, { backgroundColor: theme.colors.skeletonHighlight }]} />
         <View
-          style={[styles.button, { backgroundColor: theme.colors.primary }]}
+          style={[styles.button, { backgroundColor: theme.colors.skeletonHighlight }]}
         />
       </View>
       
-      <View style={[styles.semiContainer, { backgroundColor: theme.colors.border }]}>
-        <View style={[styles.line, { backgroundColor: theme.colors.background }]} />
-        <View style={[styles.line, { backgroundColor: theme.colors.background }]} />
+      <View style={[styles.semiContainer, { backgroundColor: theme.colors.skeletonBase }]}>
+        <View style={[styles.line, { backgroundColor: theme.colors.skeletonHighlight }]} />
+        <View style={[styles.line, { backgroundColor: theme.colors.skeletonHighlight }]} />
       </View>
 
-      <View style={[styles.semiContainer, { backgroundColor: theme.colors.border }]}>
-        <View style={[styles.line, { backgroundColor: theme.colors.background }]} />
-        <View style={[styles.line, { backgroundColor: theme.colors.background }]} />
+      <View style={[styles.semiContainer, { backgroundColor: theme.colors.skeletonBase }]}>
+        <View style={[styles.line, { backgroundColor: theme.colors.skeletonHighlight }]} />
+        <View style={[styles.line, { backgroundColor: theme.colors.skeletonHighlight }]} />
       </View>
 
-      <View style={[styles.semiContainer, { backgroundColor: theme.colors.border }]}>
-        <View style={[styles.line, { backgroundColor: theme.colors.background }]} />
+      <View style={[styles.semiContainer, { backgroundColor: theme.colors.skeletonBase }]}>
+        <View style={[styles.line, { backgroundColor: theme.colors.skeletonHighlight }]} />
         <View
-          style={[styles.button, { backgroundColor: theme.colors.primary }]}
+          style={[styles.button, { backgroundColor: theme.colors.skeletonHighlight }]}
         />
         <View
-          style={[styles.button, { backgroundColor: theme.colors.primary }]}
+          style={[styles.button, { backgroundColor: theme.colors.skeletonHighlight }]}
         />
       </View>
     </>

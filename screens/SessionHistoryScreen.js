@@ -145,8 +145,6 @@ export default function SessionHistoryScreen({ navigation }) {
     };
   }, [monthlyTotalsMap]);
 
-  console.log("Trend Data:", trendData, "Monthly Totals:", monthlyTotalsMap);
-
   const consistentItem = useMemo(() => {
     if (completedSessions.length === 0) return null;
 

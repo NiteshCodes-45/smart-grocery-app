@@ -1,43 +1,30 @@
 import { useState, useRef } from "react";
 import { useAuth } from "../../store/auth-context";
-import { Text, StyleSheet, Pressable, Animated, TextInput, View, Alert, Image } from "react-native";
+import {
+  Text,
+  StyleSheet,
+  Pressable,
+  Animated,
+  TextInput,
+  View,
+  Image,
+} from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import Signup from "./Signup";
 import { useNotification } from "../../notifications/NotificationProvider";
 
 function HeroSection() {
-  const [showLogin, setShowLogin] = useState(false);
-  const [showLoginRegister, setShowLoginRegister] = useState('');
-
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const { loginUser } = useAuth();
   const notify = useNotification();
 
-  function Input(props) {
-    return (
-      <View style={styles.inputWrapper}>
-        <TextInput {...props} style={styles.input} />
-      </View>
-    );
-  }
-
-  function toggleHero(type) {
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start(() => {
-      setShowLogin((prev) => !prev);
-      setShowLoginRegister(type);
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    });
+  function showPasswordToggle(type) {
+    if (type === "password") {
+      setShowPassword((prev) => !prev);
+    }
   }
 
   async function handleLogin() {
@@ -45,16 +32,16 @@ function HeroSection() {
       email: loginEmail,
       password: loginPassword,
     });
-    if(!isLoginSuccess.success) { 
-      notify.error(isLoginSuccess.message); 
+    if (!isLoginSuccess.success) {
+      notify.error(isLoginSuccess.message);
     }
-    if(isLoginSuccess.success) { 
-      notify.success("Login Successful"); 
+    if (isLoginSuccess.success) {
+      notify.success("Login Successful");
     }
   }
 
   return (
-    <Animated.View style={[styles.hero, { opacity: fadeAnim }]}>
+    <View style={[styles.container]}>
       <View style={styles.hero}>
         <Image
           source={require("../../assets/logo.png")}
@@ -63,91 +50,68 @@ function HeroSection() {
         />
 
         <Text style={styles.title}>Smart Grocery</Text>
-        <Text style={styles.tagline}>
-          Shop smarter. Track better.
-        </Text>
+        <Text style={styles.tagline}>Organize. Track. Understand.</Text>
       </View>
-      {!showLogin ? (
-        <>
-          <Text style={styles.heroText}>
-            Manage groceries smarter, reduce waste, and save money — all in one
-            place.
-          </Text>
 
-          <Pressable
-            style={styles.primaryBtn}
-            onPress={() => toggleHero("login")}
-          >
-            <Ionicons name="log-in-outline" size={20} color="#2F6F4E" />
-            <Text style={styles.primaryBtnText}>Login with Email</Text>
-          </Pressable>
-
-          <Text style={styles.orText}>OR</Text>
-
-          <Pressable
-            style={styles.primaryBtn}
-            onPress={() => toggleHero("signup")}
-          >
-            <Ionicons name="create-outline" size={20} color="#2F6F4E" />
-            <Text style={styles.primaryBtnText}>Register</Text>
-          </Pressable>
-        </>
-      ) : (
-        <>
-          {/* LOGIN HERO */}
-          {showLoginRegister === "login" && (
-            <>
-              <Text style={styles.loginTitle}>Login</Text>
-
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  placeholder="Email"
-                  type="email"
-                  value={loginEmail}
-                  onChangeText={setLoginEmail}
-                  style={styles.input}
-                />
-              </View>
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  placeholder="Password"
-                  type="password"
-                  value={loginPassword}
-                  onChangeText={setLoginPassword}
-                  secureTextEntry={true}
-                  style={styles.input}
-                />
-              </View>
-
-              <Pressable style={styles.primaryBtn} onPress={handleLogin}>
-                <Text style={styles.primaryBtnText}>Continue</Text>
-              </Pressable>
-            </>
+      <View style={styles.card}>
+        <View style={styles.inputWrapper}>
+          <TextInput
+            placeholder="Email"
+            type="email"
+            value={loginEmail}
+            onChangeText={setLoginEmail}
+            style={styles.input}
+          />
+        </View>
+        <View style={[styles.inputPasswordWrapper, styles.inputWrapper]}>
+          <TextInput
+            placeholder="Password"
+            type="password"
+            value={loginPassword}
+            onChangeText={setLoginPassword}
+            secureTextEntry={!showPassword}
+            style={styles.input}
+          />
+          {showPassword ? (
+            <Ionicons
+              name="eye-off"
+              size={20}
+              color="#888"
+              style={styles.eyeIcon}
+              onPress={() => showPasswordToggle("password")}
+            />
+          ) : (
+            <Ionicons
+              name="eye"
+              size={20}
+              color="#888"
+              style={styles.eyeIcon}
+              onPress={() => showPasswordToggle("password")}
+            />
           )}
-          {showLoginRegister === "signup" && (
-            <>
-            {/* Register */}
-              <Text style={styles.loginTitle}>Signup</Text>
-              <Signup />
-            </>
-          )}
+        </View>
 
-          <Pressable onPress={toggleHero}>
-            <Text style={styles.backText}>← Back</Text>
-          </Pressable>
-        </>
-      )}
-    </Animated.View>
+        <Pressable style={styles.primaryBtn} onPress={handleLogin}>
+          <Text style={styles.primaryBtnText}>Continue</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#D8F3DC",
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    alignItems: "center",
+  },
   /* HERO */
   hero: {
-    backgroundColor: "#D8F3DC",
     paddingHorizontal: 24,
     paddingTop: 15,
-    paddingBottom: 10,
+    paddingBottom: 25,
     alignItems: "center",
   },
 
@@ -172,10 +136,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
 
+  card: {
+    backgroundColor: "#8ba183ff",
+    marginHorizontal: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+    borderRadius: 12,
+    elevation: 2, // Android shadow
+    width: "100%",
+  },
   /* LOGO */
   logo: {
-    width: 65,
-    height: 65,
+    width: 60,
+    height: 60,
     marginBottom: 12,
   },
 
@@ -201,7 +174,8 @@ const styles = StyleSheet.create({
   },
 
   backText: {
-    marginTop: 14,
+    marginTop: 20,
+    marginBottom: 10,
     color: "#2F6F4E",
     fontSize: 14,
   },
@@ -209,18 +183,19 @@ const styles = StyleSheet.create({
   /* BUTTON */
   primaryBtn: {
     flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
-    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#fff",
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 12,
+    borderRadius: 10,
   },
 
   primaryBtnText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#2F6F4E", // matches logo bag
+    color: "#fff",
   },
 
   orText: {
@@ -230,7 +205,6 @@ const styles = StyleSheet.create({
     color: "#444",
   },
 
-  /* (Optional – if reused elsewhere) */
   title: {
     fontSize: 22,
     fontWeight: "700",
@@ -241,6 +215,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#555",
     marginTop: 4,
+  },
+
+  inputPasswordWrapper: {
+    position: "relative",
+    width: "100%",
+  },
+
+  eyeIcon: {
+    position: "absolute",
+    right: 12,
+    top: "55%",
+    transform: [{ translateY: -12 }],
   },
 });
 
