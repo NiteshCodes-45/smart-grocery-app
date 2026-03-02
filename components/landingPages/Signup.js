@@ -7,7 +7,10 @@ import {
   Text,
   Image,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useAuth } from "../../store/auth-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import InputRow from "../settings/InputRow";
@@ -81,114 +84,113 @@ function Signup() {
   }
 
   return (
-    <ScrollView style={styles.scrollView}>
-    <View style={[styles.container]}>
-      <View style={styles.hero}>
-        <Image
-          source={require("../../assets/logo.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={styles.title}>Smart Grocery</Text>
-        <Text style={styles.tagline}>Organize. Track. Understand.</Text>
-      </View>
-      <View style={styles.card}>
-        <InputRow
-          label="Name"
-          value={userName}
-          onChangeText={setUserName}
-          keyboardType="text"
-        />
-        <InputRow
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email"
-          notEditable={true}
-        />
-        <View style={styles.inputPasswordWrapper}>
+    <KeyboardAwareScrollView
+      enableOnAndroid
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={styles.content}
+    >
+        <View style={styles.hero}>
+          <Image
+            source={require("../../assets/logo.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>Smart Grocery</Text>
+          <Text style={styles.tagline}>Organize. Track. Understand.</Text>
+        </View>
+        <View style={styles.card}>
           <InputRow
-            label="Password"
-            type="password"
-            value={password}
-            onChangeText={setPassword}
-            keyboardType="password"
-            secureTextEntry={!showPassword}
+            label="Name"
+            value={userName}
+            onChangeText={setUserName}
+            keyboardType="text"
+          />
+          <InputRow
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email"
             notEditable={true}
           />
-          {showPassword ? (
-            <Ionicons
-              name="eye-off"
-              size={20}
-              color="#888"
-              style={styles.eyeIcon}
-              onPress={() => showPasswordToggle("password")}
+          <View style={styles.inputPasswordWrapper}>
+            <InputRow
+              label="Password"
+              type="password"
+              value={password}
+              onChangeText={setPassword}
+              keyboardType="password"
+              secureTextEntry={!showPassword}
+              notEditable={true}
             />
-          ) : (
-            <Ionicons
-              name="eye"
-              size={20}
-              color="#888"
-              style={styles.eyeIcon}
-              onPress={() => showPasswordToggle("password")}
+            {showPassword ? (
+              <Ionicons
+                name="eye-off"
+                size={20}
+                color="#888"
+                style={styles.eyeIcon}
+                onPress={() => showPasswordToggle("password")}
+              />
+            ) : (
+              <Ionicons
+                name="eye"
+                size={20}
+                color="#888"
+                style={styles.eyeIcon}
+                onPress={() => showPasswordToggle("password")}
+              />
+            )}
+          </View>
+          <View style={styles.inputPasswordWrapper}>
+            <InputRow
+              label="Confirm Password"
+              type="password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              keyboardType="password"
+              secureTextEntry={!showConfirmPassword}
+              notEditable={true}
             />
-          )}
-        </View>
-        <View style={styles.inputPasswordWrapper}>
+            {showConfirmPassword ? (
+              <Ionicons
+                name="eye-off"
+                size={20}
+                color="#888"
+                style={styles.eyeIcon}
+                onPress={() => showPasswordToggle("confirmPassword")}
+              />
+            ) : (
+              <Ionicons
+                name="eye"
+                size={20}
+                color="#888"
+                style={styles.eyeIcon}
+                onPress={() => showPasswordToggle("confirmPassword")}
+              />
+            )}
+          </View>
           <InputRow
-            label="Confirm Password"
-            type="password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            keyboardType="password"
-            secureTextEntry={!showConfirmPassword}
-            notEditable={true}
+            label="Location"
+            value={location}
+            onChangeText={setLocation}
+            keyboardType="text"
           />
-          {showConfirmPassword ? (
-            <Ionicons
-              name="eye-off"
-              size={20}
-              color="#888"
-              style={styles.eyeIcon}
-              onPress={() => showPasswordToggle("confirmPassword")}
-            />
-          ) : (
-            <Ionicons
-              name="eye"
-              size={20}
-              color="#888"
-              style={styles.eyeIcon}
-              onPress={() => showPasswordToggle("confirmPassword")}
-            />
-          )}
+          <Pressable style={styles.primaryBtn} onPress={handleSignup}>
+            <Text style={styles.primaryBtnText}>Register</Text>
+          </Pressable>
         </View>
-        <InputRow
-          label="Location"
-          value={location}
-          onChangeText={setLocation}
-          keyboardType="text"
-        />
-        <Pressable style={styles.primaryBtn} onPress={handleSignup}>
-          <Text style={styles.primaryBtnText}>Register</Text>
-        </Pressable>
-      </View>
-    </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
+    flexGrow: 1,
     backgroundColor: "#D8F3DC",
   },
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    alignItems: "center",
-  },
   hero: {
-    paddingHorizontal: 24,
     paddingBottom: 10,
     alignItems: "center",
   },
@@ -215,7 +217,6 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: "#8ba183ff",
-    marginHorizontal: 16,
     padding: 16,
     borderRadius: 12,
     elevation: 2, // Android shadow

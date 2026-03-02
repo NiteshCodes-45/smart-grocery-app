@@ -9,6 +9,7 @@ import OnboardingGuide from "../components/landingPages/OnboardingGuide";
 import NotFoundItem from "../components/NotFoundItem";
 import { useAuth } from "../store/auth-context";
 import { useNavigation } from "@react-navigation/native";
+import { currencies } from "../data/Constant";
 import DashboardSkeleton from "../components/skeletons/DashboardSkeleton";
 
 function Dashboard() {
@@ -102,7 +103,8 @@ function Dashboard() {
               {boughtCount} / {totalCount} items purchased
             </Text>
 
-            <Text style={styles.cardAmount}>₹ {sessionTotal.toFixed(2)}</Text>
+            <Text style={styles.cardAmount}>{currencies.find((c) => c.value === settings.currency)
+                  ?.symbol || "₹"} {sessionTotal.toFixed(2)}</Text>
 
             <TouchableOpacity
               style={styles.primaryButton}
@@ -128,7 +130,8 @@ function Dashboard() {
       {/* Monthly Overview */}
       <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
         <Text style={[styles.cardTitle, { color: theme.colors.text }]}>This Month</Text>
-        <Text style={[styles.cardAmount, { color: theme.colors.text }]}>₹ {monthlyTotal.toFixed(2)}</Text>
+        <Text style={[styles.cardAmount, { color: theme.colors.text }]}>{currencies.find((c) => c.value === settings.currency)
+                  ?.symbol || "₹"} {monthlyTotal.toFixed(2)}</Text>
       </View>
 
       {/* High Priority Items */}

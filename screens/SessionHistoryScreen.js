@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import { useSettings } from "../store/settings-context";
 import { currencies } from "../data/Constant";
 import NotFoundItem from "../components/NotFoundItem";
 import SessionHistoryListSkeleton from "../components/skeletons/SessionHistoryListSkeleton";
-
+import Ionicons from "@expo/vector-icons/Ionicons";
 /* ------------------ Helpers ------------------ */
 
 function toDate(ts) {
@@ -37,6 +37,7 @@ export default function SessionHistoryScreen({ navigation }) {
     useShopping();
   const { settings, isSettingsLoading } = useSettings();
   const { currentUser } = useAuth();
+  const [expandedSections, setExpandedSections] = useState({});
 
   const curr =
     currencies.find((c) => c.value === settings.currency)?.symbol || "₹";
@@ -221,6 +222,26 @@ export default function SessionHistoryScreen({ navigation }) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
+  const toggleSection = (title) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
+  };
+
+  const visibleSections = sections.map((section) => ({
+    ...section,
+    data: expandedSections[section.title] ? section.data : [],
+  }));  
+
+  useEffect(() => {
+    if (sections.length > 0) {
+      setExpandedSections({
+        [sections[0].title]: true,
+      });
+    }
+  }, [sections]);
+
   /* ================= RENDER ================= */
 
   return (
@@ -238,17 +259,17 @@ export default function SessionHistoryScreen({ navigation }) {
 
         {consistentItem && (
           <Text style={[styles.insightText, { color: theme.colors.text }]}>
-            {consistentItem.name.charAt(0).toUpperCase() +
+            <Text style={{ fontWeight: "bold" }}>{consistentItem.name.charAt(0).toUpperCase() +
               consistentItem.name.slice(1)}{" "}
-            appears in {consistentItem.percentage}% of sessions.
+            </Text>appears in {consistentItem.percentage}% of sessions.
           </Text>
         )}
 
         {dominantCategory && (
           <Text style={[styles.insightText, { color: theme.colors.text }]}>
-            {dominantCategory.category.charAt(0).toUpperCase() +
+            <Text style={{ fontWeight: "bold" }}>{dominantCategory.category.charAt(0).toUpperCase() +
               dominantCategory.category.slice(1)}{" "}
-            accounts for {dominantCategory.percentage}% of total spend.
+            </Text>accounts for {dominantCategory.percentage}% of total spend.
           </Text>
         )}
 
@@ -259,13 +280,13 @@ export default function SessionHistoryScreen({ navigation }) {
         )}
         {!trendData?.insufficient && trendData && (
           <Text style={[styles.insightText, { color: theme.colors.text }]}>
-            Spending {trendData.increased ? "increased" : "decreased"}{" "}
-            {Math.abs(trendData.percentage)}% compared to last month.
+            Spending <Text style={{ fontWeight: "bold" }}>{trendData.increased ? "increased" : "decreased"}{" "}
+            </Text>{Math.abs(trendData.percentage)}% compared to last month.
           </Text>
         )}
       </View>
       <SectionList
-        sections={sections}
+        sections={visibleSections}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 100 }}
         ListHeaderComponent={
@@ -280,22 +301,48 @@ export default function SessionHistoryScreen({ navigation }) {
           />
         }
         renderSectionHeader={({ section }) => {
-          const monthTotal = section.data.reduce(
-            (sum, s) => sum + getSessionTotal(s.id),
-            0,
-          );
+  const isExpanded = expandedSections[section.title];
 
-          return (
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionHeaderText, { color: theme.colors.text }]}>
-                {section.title.toUpperCase()}
-              </Text>
-              <Text style={[styles.sectionTotal, { color: theme.colors.text }]}>
-                {curr} {monthTotal.toFixed(2)}
-              </Text>
-            </View>
-          );
-        }}
+  const monthTotal = section.data.reduce(
+    (sum, s) => sum + getSessionTotal(s.id),
+    0
+  );
+
+  return (
+    <Pressable
+      onPress={() => toggleSection(section.title)}
+      style={styles.sectionHeader}
+    >
+      <View style={{ flex: 1 }}>
+        <Text
+          style={[
+            styles.sectionHeaderText,
+            { color: theme.colors.text },
+          ]}
+        >
+          {section.title.toUpperCase()}
+        </Text>
+
+        { isExpanded && (  
+          <Text
+            style={[
+              styles.sectionTotal,
+              { color: theme.colors.text },
+            ]}
+          >
+            {curr} {monthTotal.toFixed(2)}
+          </Text>
+        )}
+      </View>
+
+      <Ionicons
+        name={isExpanded ? "chevron-up" : "chevron-down"}
+        size={20}
+        color={theme.colors.text}
+      />
+    </Pressable>
+  );
+}}
         renderItem={({ item }) => {
           const total = getSessionTotal(item.id);
 
@@ -445,7 +492,7 @@ const styles = StyleSheet.create({
   },
 
   sectionTotal: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "600",
     marginTop: 4,
   },
@@ -477,11 +524,11 @@ const styles = StyleSheet.create({
   sessionCard: {
     marginHorizontal: 20,
     padding: 18,
-    marginTop: 10,
     borderRadius: 10,
     flexDirection: "row",
     justifyContent: "space-between",
     elevation: 2,
+    marginBottom: 5
   },
 
   sessionDate: {
@@ -495,9 +542,11 @@ const styles = StyleSheet.create({
   },
 
   sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
-    marginTop: 5,
-    marginBottom: 10,
+    paddingVertical: 12,
   },
 
   sectionHeaderText: {
