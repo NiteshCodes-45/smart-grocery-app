@@ -11,6 +11,7 @@ import { useShopping } from "../store/shopping-context";
 import { useTheme } from "../store/theme-context";
 import { useAuth } from "../store/auth-context";
 import { useSettings } from "../store/settings-context";
+import { useRecurring } from "../recurring/recurring-context";
 import { currencies } from "../data/Constant";
 import NotFoundItem from "../components/NotFoundItem";
 import SessionHistoryListSkeleton from "../components/skeletons/SessionHistoryListSkeleton";
@@ -38,6 +39,46 @@ export default function SessionHistoryScreen({ navigation }) {
   const { settings, isSettingsLoading } = useSettings();
   const { currentUser } = useAuth();
   const [expandedSections, setExpandedSections] = useState({});
+  const { recurringItems, addRecurringItem, toggleSkipDate } = useRecurring();
+
+  const recurringMonthlyTotal = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    let total = 0;
+
+    if (!Array.isArray(recurringItems) || recurringItems.length === 0) {
+      return 0;
+    }
+
+    recurringItems.forEach((item) => {
+      if (!item.active) return;
+
+      const skippedThisMonth =
+        item.skippedDates?.filter((d) => {
+          const date = new Date(d);
+          return (
+            date.getFullYear() === year &&
+            date.getMonth() === month
+          );
+        }).length || 0;
+
+      const startDate = new Date(item.startDate);
+      const startDay = startDate.getMonth() === month
+        ? startDate.getDate()
+        : 1;
+
+      const activeDays = daysInMonth - (startDay - 1);    
+      const billableDays = activeDays - skippedThisMonth;
+
+      total += billableDays * item.pricePerUnit;
+    });
+
+    return total;
+  }, [recurringItems]);
 
   const curr =
     currencies.find((c) => c.value === settings.currency)?.symbol || "₹";
@@ -251,6 +292,33 @@ export default function SessionHistoryScreen({ navigation }) {
           Your Shopping History
         </Text>
         <Text style={styles.subtitle}>Track your shopping insights</Text>
+      </View>
+      <View style={[styles.insightCard, { backgroundColor: theme.colors.card }]}>
+        <Text style={styles.sectionTitle}>
+          Recurring Monthly Expenses
+        </Text>
+        {recurringItems.map((item) => {
+          const now = new Date();
+          const daysInMonth = new Date(
+            now.getFullYear(),
+            now.getMonth() + 1,
+            0
+          ).getDate();
+          const skipped = item.skippedDates?.length || 0;
+          const total = (daysInMonth - skipped) * item.pricePerUnit;
+
+          return (
+            <View key={item.id} style={styles.recurringRow}>
+              <Text>{item.name}</Text>
+              <Text>{curr} {total}</Text>
+            </View>
+          );
+        })}
+
+        <View style={styles.recurringTotal}>
+          <Text>Total</Text>
+          <Text>{curr} {recurringMonthlyTotal}</Text>
+        </View>
       </View>
       <View
         style={[styles.insightCard, { backgroundColor: theme.colors.card }]}
@@ -582,4 +650,13 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     color: "#504c4c",
   },
+  recurringRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  recurringTotal:{
+    flexDirection:"row",
+    justifyContent:"space-between" 
+  }
 });

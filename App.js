@@ -8,6 +8,7 @@ import { GroceryContextProvider } from "./grocery/grocery-context";
 import RootNavigation from "./screens/RootNavigation";
 import { AuthProvider } from "./store/auth-context";
 import { SettingsProvider } from "./store/settings-context";
+import { RecurringProvider } from "./recurring/recurring-context";
 import { ShoppingProvider } from "./store/shopping-context";
 import { NetworkProvider } from "./store/network-context";
 import { NotificationProvider } from "./notifications/NotificationProvider";
@@ -72,12 +73,14 @@ export default function App() {
                       imageStyle={{ opacity: 0.25 }}
                     >
                       <GroceryContextProvider>
-                        <ShoppingProvider>
-                          <NotificationProvider>
-                            <NavigationWrapper />
-                            <EnvironmentBadge />
-                          </NotificationProvider>
-                        </ShoppingProvider>
+                        <RecurringProvider>
+                          <ShoppingProvider>
+                            <NotificationProvider>
+                              <NavigationWrapper />
+                              <EnvironmentBadge />
+                            </NotificationProvider>
+                          </ShoppingProvider>
+                        </RecurringProvider>
                       </GroceryContextProvider>
                     </ImageBackground>
                   </ThemeProvider>
