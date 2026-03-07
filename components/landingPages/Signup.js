@@ -6,9 +6,6 @@ import {
   TextInput,
   Text,
   Image,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useAuth } from "../../store/auth-context";
@@ -16,6 +13,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import InputRow from "../settings/InputRow";
 import { useNotification } from "../../notifications/NotificationProvider";
 import { validateEmail } from "../../data/Constant";
+import { useNavigation } from "@react-navigation/native";
 
 function Signup() {
   const [userName, setUserName] = useState("");
@@ -27,6 +25,7 @@ function Signup() {
   const [location, setLocation] = useState("");
   const { signupUser } = useAuth();
   const notify = useNotification();
+  const navigation = useNavigation();
 
   function showPasswordToggle(type) {
     if (type === "password") {
@@ -177,6 +176,14 @@ function Signup() {
           <Pressable style={styles.primaryBtn} onPress={handleSignup}>
             <Text style={styles.primaryBtnText}>Register</Text>
           </Pressable>
+        </View>
+        <View style={{marginVertical:30}}>
+          <Text style={{color:"#1B4332", textAlign:"center"}}>
+            Already have an account?{" "}
+            <Text style={{color:"#2F6F4E", fontWeight:500, textDecorationLine: "underline"}} onPress={() => navigation.navigate("Login")}>
+              Login
+            </Text>
+          </Text>
         </View>
     </KeyboardAwareScrollView>
   );

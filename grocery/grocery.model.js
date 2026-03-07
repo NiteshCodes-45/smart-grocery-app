@@ -7,14 +7,15 @@ const priorityMap = {
 };
 
 export const createGroceryModel = (data) => {
-  const priority = (data.priority || "high").toLowerCase();
+  const priority = (data.priority || "Low").toLowerCase();
 
   return {
     name: data.name?.trim() || "",
     category: data.category?.toLowerCase() || "",
     qty: data.qty ?? 1,
     unit: data.unit || "",
-    frequency: data.frequency?.toLowerCase() || "weekly",
+    pricePerUnit: data.dailyPrice ?? 0,
+    frequency: data.frequency?.toLowerCase() || "once",
     season: data.season?.toLowerCase() || "all",
     checked: data.checked ?? false,
 

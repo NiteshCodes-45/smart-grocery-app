@@ -36,9 +36,11 @@ const priorities = [
 
 //frequency: "weekly" | "monthly" | "occasionally"
 const frequencies = [
+  { label: "Once", value: "once" },
   { label: "Daily", value: "daily" },
   { label: "Weekly", value: "weekly" },
   { label: "Monthly", value: "monthly" },
+  { label: "Seasonal", value: "seasonal" },
   { label: "Occasionally", value: "occasionally" },
 ];
 

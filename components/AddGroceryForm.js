@@ -24,6 +24,7 @@ function AddGroceryForm({
   const [season, setSeason] = useState("");
   const [priority, setPriority] = useState("");
   const [frequency, setFrequency] = useState(""); 
+  const [dailyPrice, setDailyPrice] = useState("");
   const { groceryItems } = useGrocery();
   const { settings } = useSettings();
   const { theme } = useTheme();
@@ -46,6 +47,7 @@ function AddGroceryForm({
     setSeason(itemToEdit.season ?? "all");
     setPriority((itemToEdit.priority ?? "medium").toLowerCase());
     setFrequency((itemToEdit.frequency ?? "occasionally").toLowerCase());
+    setDailyPrice(itemToEdit.pricePerUnit ? itemToEdit.pricePerUnit.toString() : "");
   }, [isEditMode, itemId, groceryItems]);
   
   const { addGroceryItem, updateGroceryItem } = useGrocery();
@@ -55,7 +57,6 @@ function AddGroceryForm({
       notify.info("Please enter a grocery item name.");
       return;
     }
-
     const groceryData = {
       name: name.trim(),
       qty: Number(qty) || 1,
@@ -65,6 +66,7 @@ function AddGroceryForm({
       season,
       priority: priority.toLowerCase(),
       frequency: frequency.toLowerCase(),
+      dailyPrice: frequency === "daily" ? Number(dailyPrice) || 0 : undefined,
     };
 
     if (isEditMode && itemId) {
@@ -84,6 +86,7 @@ function AddGroceryForm({
       setSeason("all");
       setPriority("medium");
       setFrequency("occasionally");
+      setDailyPrice("");
     }
   }
 
@@ -166,6 +169,19 @@ function AddGroceryForm({
               />
             </View>
           </View>
+          { frequency === "daily" && (
+            <View style={styles.selectContainer}>
+              <View style={styles.dropdownWrapper}>
+                <InputRow
+                  label="Daily Price"
+                  value={dailyPrice}
+                  onChangeText={setDailyPrice}
+                  keyboardType="decimal-pad"
+                />
+              </View>
+            </View>
+          )}
+
           <View style={styles.buttonContainer}>
             <View style={styles.button}>
               <Buttons pressBtn={saveGroceryHandler} color="#5e0acc">

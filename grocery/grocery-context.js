@@ -14,11 +14,13 @@ import {
 import { createGroceryModel } from "./grocery.model";
 import { db } from "../firebase/firebaseConfig";
 import { useAuth } from "../store/auth-context";
+import { useRecurring } from "../recurring/recurring-context";
 
 const GroceryContext = createContext(null);
 
 export function GroceryContextProvider({ children }) {
   const { currentUser } = useAuth();
+  const { createRecurringFromGrocery, deleteRecurringById } = useRecurring();
   const [groceryItems, setGroceryItems] = useState([]);
   const [isSyncing, setSyncing] = useState(true);
 
@@ -49,34 +51,28 @@ export function GroceryContextProvider({ children }) {
 
   async function addGroceryItem(item) {
     if (!currentUser?.uid) return;
-    const model = createGroceryModel(item);
-    await addGrocery(currentUser.uid, model);
-    // await addDoc(
-    //   collection(db, "users", currentUser.uid, "groceries"),
-    //   {
-    //     ...item,
-    //     checked: false,
-    //     updatedAt: serverTimestamp(),
-    //   }
-    // );
+    try{
+      const model = createGroceryModel(item);
+      const groceryId = await addGrocery(currentUser.uid, model);
+      if(groceryId && model.frequency === "daily"){
+        await createRecurringFromGrocery(model, groceryId);
+      }
+    } catch (error) {
+      console.error("Error adding grocery item:", error);
+    }
   }
 
   async function updateGroceryItem(id, updatedItem) {
     await updateGrocery(currentUser.uid, id, updatedItem);
-    // await updateDoc(
-    //   doc(db, "users", currentUser.uid, "groceries", id),
-    //   {
-    //     ...updatedItem,
-    //     updatedAt: serverTimestamp(),
-    //   }
-    // );
   }
 
   async function removeGroceryItem(id) {
+    const grocery = groceryItems.find(i => i.id === id);
+    if (!grocery) return;
+    if (grocery.frequency === "daily") {
+      await deleteRecurringById(grocery.id);
+    }
     await deleteGrocery(currentUser.uid, id);
-    // await deleteDoc(
-    //   doc(db, "users", currentUser.uid, "groceries", id)
-    // );
   }
 
   async function toggleBought(id, checked) {

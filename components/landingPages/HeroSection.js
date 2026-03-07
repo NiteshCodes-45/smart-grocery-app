@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNotification } from "../../notifications/NotificationProvider";
+import { useNavigation } from "@react-navigation/native";
 
 function HeroSection() {
   const [loginEmail, setLoginEmail] = useState("");
@@ -20,6 +21,7 @@ function HeroSection() {
 
   const { loginUser } = useAuth();
   const notify = useNotification();
+  const navigation = useNavigation();
 
   function showPasswordToggle(type) {
     if (type === "password") {
@@ -94,6 +96,21 @@ function HeroSection() {
         <Pressable style={styles.primaryBtn} onPress={handleLogin}>
           <Text style={styles.primaryBtnText}>Continue</Text>
         </Pressable>
+      </View>
+      <View style={{ marginVertical: 30 }}>
+        <Text style={{ color: "#1B4332", textAlign: "center" }}>
+          Don't have an account?{" "}
+          <Text
+            style={{
+              color: "#2F6F4E",
+              fontWeight: 500,
+              textDecorationLine: "underline",
+            }}
+            onPress={() => navigation.navigate("Register")}
+          >
+            Signup
+          </Text>
+        </Text>
       </View>
     </View>
   );

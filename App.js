@@ -72,16 +72,16 @@ export default function App() {
                       style={styles.mainContainer}
                       imageStyle={{ opacity: 0.25 }}
                     >
-                      <GroceryContextProvider>
-                        <RecurringProvider>
+                      <RecurringProvider>
+                        <GroceryContextProvider>
                           <ShoppingProvider>
                             <NotificationProvider>
                               <NavigationWrapper />
                               <EnvironmentBadge />
                             </NotificationProvider>
                           </ShoppingProvider>
-                        </RecurringProvider>
-                      </GroceryContextProvider>
+                        </GroceryContextProvider>
+                      </RecurringProvider>
                     </ImageBackground>
                   </ThemeProvider>
                 </SettingsProvider>

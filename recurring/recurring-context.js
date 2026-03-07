@@ -6,10 +6,17 @@ import {
   updateDoc,
   doc,
   serverTimestamp,
+  deleteDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebaseConfig";
 import { useAuth } from "../store/auth-context";
+
+const priorityMap = {
+  high: 0,
+  medium: 1,
+  low: 2,
+};
 
 const RecurringContext = createContext();
 
@@ -57,12 +64,42 @@ export function RecurringProvider({ children }) {
     );
   }
 
+  async function createRecurringFromGrocery(grocery, groceryId) {
+    const exists = recurringItems.find(
+      item => item.groceryId === groceryId || item.name.toLowerCase() === grocery.name.toLowerCase()
+    );
+
+    if (exists) return;
+
+    await addDoc(collection(db, "users", currentUser.uid, "recurringItems"), {
+      groceryId: groceryId,
+      name: grocery.name,
+      pricePerUnit: grocery.pricePerUnit ?? 0,
+      startDate: new Date().toISOString().split("T")[0],
+      skippedDates: [],
+      active: true,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  async function deleteRecurringById(id) {
+    const item = recurringItems.find(
+      r => r.groceryId === id || r.id === id
+    );
+    if (!item) return;
+    await deleteDoc(
+      doc(db, "users", currentUser.uid, "recurringItems", item.id)
+    );
+  }
+
   return (
     <RecurringContext.Provider
       value={{
         recurringItems,
         addRecurringItem,
         toggleSkipDate,
+        createRecurringFromGrocery,
+        deleteRecurringById, 
       }}
     >
       {children}

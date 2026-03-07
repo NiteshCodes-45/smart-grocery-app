@@ -12,10 +12,17 @@ import { useTheme } from "../store/theme-context";
 import { useAuth } from "../store/auth-context";
 import { useSettings } from "../store/settings-context";
 import { useRecurring } from "../recurring/recurring-context";
+import {
+  getItemMonthlyTotal,
+  getMonthlyRecurringTotal,
+  getRecurringLifetimeTotal,
+} from "../components/recurring/recurring.utils";
 import { currencies } from "../data/Constant";
 import NotFoundItem from "../components/NotFoundItem";
+import SmartInsights from "../components/sessionHistory/SmartInsights";
 import SessionHistoryListSkeleton from "../components/skeletons/SessionHistoryListSkeleton";
 import Ionicons from "@expo/vector-icons/Ionicons";
+
 /* ------------------ Helpers ------------------ */
 
 function toDate(ts) {
@@ -38,50 +45,28 @@ export default function SessionHistoryScreen({ navigation }) {
     useShopping();
   const { settings, isSettingsLoading } = useSettings();
   const { currentUser } = useAuth();
+  const { recurringItems } = useRecurring();
+
   const [expandedSections, setExpandedSections] = useState({});
-  const { recurringItems, addRecurringItem, toggleSkipDate } = useRecurring();
-
-  const recurringMonthlyTotal = useMemo(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    let total = 0;
-
-    if (!Array.isArray(recurringItems) || recurringItems.length === 0) {
-      return 0;
-    }
-
-    recurringItems.forEach((item) => {
-      if (!item.active) return;
-
-      const skippedThisMonth =
-        item.skippedDates?.filter((d) => {
-          const date = new Date(d);
-          return (
-            date.getFullYear() === year &&
-            date.getMonth() === month
-          );
-        }).length || 0;
-
-      const startDate = new Date(item.startDate);
-      const startDay = startDate.getMonth() === month
-        ? startDate.getDate()
-        : 1;
-
-      const activeDays = daysInMonth - (startDay - 1);    
-      const billableDays = activeDays - skippedThisMonth;
-
-      total += billableDays * item.pricePerUnit;
-    });
-
-    return total;
-  }, [recurringItems]);
 
   const curr =
     currencies.find((c) => c.value === settings.currency)?.symbol || "₹";
+
+  const monthlyRecurringTotal = useMemo(
+    () => getMonthlyRecurringTotal(recurringItems),
+    [recurringItems],
+  );
+
+  const recurringLifetimeTotal = useMemo(
+    () => getRecurringLifetimeTotal(recurringItems),
+    [recurringItems],
+  );
+
+  const completedSessions = useMemo(() => {
+    return sessions
+      .filter((s) => s.status === "COMPLETED" && s.finishedAt)
+      .sort((a, b) => toDate(b.finishedAt) - toDate(a.finishedAt));
+  }, [sessions]);
 
   /* ---------- Guard ---------- */
 
@@ -99,13 +84,7 @@ export default function SessionHistoryScreen({ navigation }) {
 
   /* ---------- Derived Data ---------- */
 
-  const completedSessions = useMemo(() => {
-    return sessions
-      .filter((s) => s.status === "COMPLETED" && s.finishedAt)
-      .sort((a, b) => toDate(b.finishedAt) - toDate(a.finishedAt));
-  }, [sessions]);
-
-  if (completedSessions.length === 0) {
+  if (completedSessions.length === 0 && recurringItems.length === 0) {
     return (
       <View style={styles.center}>
         <NotFoundItem>No shopping history yet 🧾</NotFoundItem>
@@ -115,10 +94,12 @@ export default function SessionHistoryScreen({ navigation }) {
 
   const totalSessions = completedSessions.length;
 
-  const totalSpent = completedSessions.reduce(
+  const totalSessionSpent = completedSessions.reduce(
     (sum, s) => sum + getSessionTotal(s.id),
     0,
   );
+
+  const totalSpent = totalSessionSpent + parseInt(recurringLifetimeTotal);
 
   const sections = useMemo(() => {
     if (!Array.isArray(completedSessions) || completedSessions.length === 0)
@@ -147,102 +128,8 @@ export default function SessionHistoryScreen({ navigation }) {
     return Object.values(grouped).sort((a, b) => b.monthDate - a.monthDate);
   }, [completedSessions]);
 
-  const monthlyTotalsMap = useMemo(() => {
-    const map = {};
-
-    completedSessions.forEach((session) => {
-      const date = toDate(session.finishedAt);
-      const key = `${date.getFullYear()}-${date.getMonth()}`;
-
-      if (!map[key]) map[key] = 0;
-
-      map[key] += getSessionTotal(session.id);
-    });
-
-    return map;
-  }, [completedSessions]);
-
-  const trendData = useMemo(() => {
-    const now = new Date();
-    const currentKey = `${now.getFullYear()}-${now.getMonth()}`;
-
-    const prevDate = new Date(now.getFullYear(), now.getMonth() - 1);
-    const prevKey = `${prevDate.getFullYear()}-${prevDate.getMonth()}`;
-
-    const currentTotal = monthlyTotalsMap[currentKey] || 0;
-    const previousTotal = monthlyTotalsMap[prevKey] || 0;
-
-    if (!previousTotal) {
-      return {
-        insufficient: true,
-      };
-    }
-
-    const change = ((currentTotal - previousTotal) / previousTotal) * 100;
-
-    return {
-      insufficient: false,
-      percentage: change.toFixed(1),
-      increased: change > 0,
-    };
-  }, [monthlyTotalsMap]);
-
-  const consistentItem = useMemo(() => {
-    if (completedSessions.length === 0) return null;
-
-    const frequency = {};
-
-    completedSessions.forEach((session) => {
-      const itemsInSession = sessionItems.filter(
-        (item) => item.sessionId === session.id,
-      );
-
-      const uniqueItems = new Set(itemsInSession.map((i) => i.name));
-
-      uniqueItems.forEach((name) => {
-        frequency[name] = (frequency[name] || 0) + 1;
-      });
-    });
-
-    const sorted = Object.entries(frequency).sort((a, b) => b[1] - a[1]);
-
-    if (sorted.length === 0) return null;
-
-    const [name, count] = sorted[0];
-
-    const percentage = ((count / completedSessions.length) * 100).toFixed(0);
-
-    return { name, percentage };
-  }, [completedSessions, sessionItems]);
-
-  const dominantCategory = useMemo(() => {
-    const categoryTotals = {};
-
-    sessionItems.forEach((item) => {
-      if (!item.price) return;
-
-      categoryTotals[item.category] =
-        (categoryTotals[item.category] || 0) + Number(item.price);
-    });
-
-    const sorted = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
-
-    if (sorted.length === 0) return null;
-
-    const [category, total] = sorted[0];
-
-    const overallTotal = Object.values(categoryTotals).reduce(
-      (sum, val) => sum + val,
-      0,
-    );
-
-    const percentage = ((total / overallTotal) * 100).toFixed(0);
-
-    return { category, percentage };
-  }, [sessionItems]);
-
   const now = new Date();
-  const thisMonthSpent = completedSessions
+  const thisMonthEachSessionSpent = completedSessions
     .filter((s) => {
       const d = toDate(s.finishedAt);
       return (
@@ -250,6 +137,8 @@ export default function SessionHistoryScreen({ navigation }) {
       );
     })
     .reduce((sum, s) => sum + getSessionTotal(s.id), 0);
+
+  const thisMonthSpent = thisMonthEachSessionSpent + monthlyRecurringTotal;
 
   const avgPerSession =
     totalSessions > 0 ? (totalSpent / totalSessions).toFixed(2) : 0;
@@ -273,7 +162,7 @@ export default function SessionHistoryScreen({ navigation }) {
   const visibleSections = sections.map((section) => ({
     ...section,
     data: expandedSections[section.title] ? section.data : [],
-  }));  
+  }));
 
   useEffect(() => {
     if (sections.length > 0) {
@@ -293,66 +182,17 @@ export default function SessionHistoryScreen({ navigation }) {
         </Text>
         <Text style={styles.subtitle}>Track your shopping insights</Text>
       </View>
-      <View style={[styles.insightCard, { backgroundColor: theme.colors.card }]}>
-        <Text style={styles.sectionTitle}>
-          Recurring Monthly Expenses
-        </Text>
-        {recurringItems.map((item) => {
-          const now = new Date();
-          const daysInMonth = new Date(
-            now.getFullYear(),
-            now.getMonth() + 1,
-            0
-          ).getDate();
-          const skipped = item.skippedDates?.length || 0;
-          const total = (daysInMonth - skipped) * item.pricePerUnit;
 
-          return (
-            <View key={item.id} style={styles.recurringRow}>
-              <Text>{item.name}</Text>
-              <Text>{curr} {total}</Text>
-            </View>
-          );
-        })}
+      {/* Smart Insights */}
+      <SmartInsights
+        theme={theme}
+        toDate={toDate}
+        completedSessions={completedSessions}
+        sessionItems={sessionItems}  
+        recurringItems={recurringItems}
+      />
 
-        <View style={styles.recurringTotal}>
-          <Text>Total</Text>
-          <Text>{curr} {recurringMonthlyTotal}</Text>
-        </View>
-      </View>
-      <View
-        style={[styles.insightCard, { backgroundColor: theme.colors.card }]}
-      >
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Smart Insights</Text>
-
-        {consistentItem && (
-          <Text style={[styles.insightText, { color: theme.colors.text }]}>
-            <Text style={{ fontWeight: "bold" }}>{consistentItem.name.charAt(0).toUpperCase() +
-              consistentItem.name.slice(1)}{" "}
-            </Text>appears in {consistentItem.percentage}% of sessions.
-          </Text>
-        )}
-
-        {dominantCategory && (
-          <Text style={[styles.insightText, { color: theme.colors.text }]}>
-            <Text style={{ fontWeight: "bold" }}>{dominantCategory.category.charAt(0).toUpperCase() +
-              dominantCategory.category.slice(1)}{" "}
-            </Text>accounts for {dominantCategory.percentage}% of total spend.
-          </Text>
-        )}
-
-        {trendData?.insufficient && (
-          <Text style={[styles.insightTextWithNoData, { color: theme.colors.text }]}>
-            Not enough data to calculate monthly trend yet.
-          </Text>
-        )}
-        {!trendData?.insufficient && trendData && (
-          <Text style={[styles.insightText, { color: theme.colors.text }]}>
-            Spending <Text style={{ fontWeight: "bold" }}>{trendData.increased ? "increased" : "decreased"}{" "}
-            </Text>{Math.abs(trendData.percentage)}% compared to last month.
-          </Text>
-        )}
-      </View>
+      {/* END */}
       <SectionList
         sections={visibleSections}
         keyExtractor={(item) => item.id}
@@ -366,51 +206,49 @@ export default function SessionHistoryScreen({ navigation }) {
             totalSessions={totalSessions}
             avgPerSession={avgPerSession}
             topItems={topItems}
+            recurringItems={recurringItems}
           />
         }
         renderSectionHeader={({ section }) => {
-  const isExpanded = expandedSections[section.title];
+          const isExpanded = expandedSections[section.title];
 
-  const monthTotal = section.data.reduce(
-    (sum, s) => sum + getSessionTotal(s.id),
-    0
-  );
+          const monthTotal = section.data.reduce(
+            (sum, s) => sum + getSessionTotal(s.id),
+            0,
+          );
 
-  return (
-    <Pressable
-      onPress={() => toggleSection(section.title)}
-      style={styles.sectionHeader}
-    >
-      <View style={{ flex: 1 }}>
-        <Text
-          style={[
-            styles.sectionHeaderText,
-            { color: theme.colors.text },
-          ]}
-        >
-          {section.title.toUpperCase()}
-        </Text>
+          return (
+            <Pressable
+              onPress={() => toggleSection(section.title)}
+              style={styles.sectionHeader}
+            >
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={[
+                    styles.sectionHeaderText,
+                    { color: theme.colors.text },
+                  ]}
+                >
+                  {section.title.toUpperCase()}
+                </Text>
 
-        { isExpanded && (  
-          <Text
-            style={[
-              styles.sectionTotal,
-              { color: theme.colors.text },
-            ]}
-          >
-            {curr} {monthTotal.toFixed(2)}
-          </Text>
-        )}
-      </View>
+                {isExpanded && (
+                  <Text
+                    style={[styles.sectionTotal, { color: theme.colors.text }]}
+                  >
+                    {curr} {monthTotal.toFixed(2)}
+                  </Text>
+                )}
+              </View>
 
-      <Ionicons
-        name={isExpanded ? "chevron-up" : "chevron-down"}
-        size={20}
-        color={theme.colors.text}
-      />
-    </Pressable>
-  );
-}}
+              <Ionicons
+                name={isExpanded ? "chevron-up" : "chevron-down"}
+                size={20}
+                color={theme.colors.text}
+              />
+            </Pressable>
+          );
+        }}
         renderItem={({ item }) => {
           const total = getSessionTotal(item.id);
 
@@ -456,6 +294,7 @@ function HistoryHeader({
   totalSessions,
   avgPerSession,
   topItems,
+  recurringItems,
 }) {
   return (
     <View style={{ padding: 20 }}>
@@ -464,9 +303,14 @@ function HistoryHeader({
         horizontal
         showsHorizontalScrollIndicator={false}
         data={[
-          { label: "Total Spent", value: `${curr} ${totalSpent.toFixed(2)}` },
+          {
+            label: "Total Spent",
+            subLabel: "Since you started using the app",
+            value: `${curr} ${totalSpent.toFixed(2)}`,
+          },
           {
             label: "This Month",
+            subLabel: "Includes recurring expenses",
             value: `${curr} ${thisMonthSpent.toFixed(2)}`,
           },
           { label: "Sessions", value: totalSessions },
@@ -481,6 +325,9 @@ function HistoryHeader({
             <Text style={[styles.statValue, { color: theme.colors.text }]}>
               {item.value}
             </Text>
+            <Text style={[styles.statSubLabel, { color: theme.colors.text }]}>
+              {item.subLabel}
+            </Text>
           </View>
         )}
       />
@@ -489,7 +336,9 @@ function HistoryHeader({
       <View
         style={[styles.topItemsCard, { backgroundColor: theme.colors.card }]}
       >
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Top Purchased</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          Top Purchased
+        </Text>
 
         {topItems.length === 0 ? (
           <Text style={styles.emptyText}>No items purchased yet.</Text>
@@ -501,6 +350,35 @@ function HistoryHeader({
               </Text>
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{count}x</Text>
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+
+      {/* Recurring Items */}
+      <View
+        style={[styles.topItemsCard, { backgroundColor: theme.colors.card }]}
+      >
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          Recurring Items
+        </Text>
+        {recurringItems.length === 0 ? (
+          <Text style={styles.emptyText}>No recurring items yet.</Text>
+        ) : (
+          recurringItems.map((item) => (
+            <View key={item.id} style={styles.itemRow}>
+              <Text style={[styles.itemName, { color: theme.colors.text }]}>
+                {item.name}{" "}
+                <Text style={{ fontSize: 11 }}>
+                  ({curr} {item.pricePerUnit}/Day)
+                </Text>
+              </Text>
+
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {curr} {getItemMonthlyTotal(item).toFixed(2)}
+                </Text>
               </View>
             </View>
           ))
@@ -528,11 +406,14 @@ const styles = StyleSheet.create({
   },
 
   statCard: {
-    padding: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
     borderRadius: 10,
     marginRight: 14,
     minWidth: 150,
     elevation: 2,
+    flex: 1,
+    verticalAlign: "top",
   },
 
   statLabel: {
@@ -596,7 +477,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     elevation: 2,
-    marginBottom: 5
+    marginBottom: 5,
   },
 
   sessionDate: {
@@ -624,39 +505,32 @@ const styles = StyleSheet.create({
     color: "#504c4c",
   },
 
-  insightCard: {
-    padding: 18,
-    borderRadius: 18,
-    marginHorizontal: 20,
-    elevation: 2,
-    marginBottom: 15,
-    borderBottomWidth: 4,
-    borderColor: "#4CAF50",
-  },
-
-  insightText: {
-    fontSize: 13,
-    marginBottom: 8,
-    lineHeight: 18,
-  },
-
   headerTitleContainer: {
     paddingHorizontal: 25,
     marginTop: 20,
   },
 
-  insightTextWithNoData: {
-    fontSize: 13,
-    fontStyle: "italic",
-    color: "#504c4c",
-  },
   recurringRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  recurringTotal:{
-    flexDirection:"row",
-    justifyContent:"space-between" 
-  }
+
+  recurringTotal: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  emptyText: {
+    fontSize: 13,
+    fontStyle: "italic",
+    color: "#504c4c",
+  },
+
+  statSubLabel: {
+    fontSize: 10,
+    color: "#777",
+    marginTop: 4,
+  },
+
 });

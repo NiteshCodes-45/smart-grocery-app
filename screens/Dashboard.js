@@ -3,14 +3,17 @@ import { useMemo } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useGrocery } from "../grocery/grocery-context";
 import { useShopping } from "../store/shopping-context";
+import { useRecurring } from "../recurring/recurring-context";
 import { useTheme } from "../store/theme-context";
 import { useSettings } from "../store/settings-context";
+import { getMonthlyRecurringTotal } from "../components/recurring/recurring.utils";
 import OnboardingGuide from "../components/landingPages/OnboardingGuide";
 import NotFoundItem from "../components/NotFoundItem";
 import { useAuth } from "../store/auth-context";
 import { useNavigation } from "@react-navigation/native";
 import { currencies } from "../data/Constant";
 import DashboardSkeleton from "../components/skeletons/DashboardSkeleton";
+import RecurringSection from "../components/recurring/RecurringSection";
 
 function Dashboard() {
   const { theme } = useTheme();
@@ -19,8 +22,16 @@ function Dashboard() {
   const { settings, isSettingsLoading, markOnboardingSeen } = useSettings();
   const { groceryItems, isSyncing } = useGrocery();
   const { activeSession, getActiveSessionItems, sessionItems } = useShopping();
+  const { recurringItems, toggleSkipDate } = useRecurring();
 
   const isInitialLoading = isSettingsLoading || isSyncing;
+
+  const curr = currencies.find((c) => c.value === settings?.currency)?.symbol || "₹";
+
+  const monthlyRecurringTotal = useMemo(
+    () => getMonthlyRecurringTotal(recurringItems),
+    [recurringItems]
+  );
 
   // Greeting
   const greeting = useMemo(() => {
@@ -41,7 +52,7 @@ function Dashboard() {
   );
 
   // Monthly total
-  const monthlyTotal = useMemo(() => {
+  const monthlySessionTotal = useMemo(() => {
     const now = new Date();
     const month = now.getMonth();
     const year = now.getFullYear();
@@ -59,6 +70,8 @@ function Dashboard() {
       return sum;
     }, 0);
   }, [sessionItems]);
+
+  const monthlyTotal = monthlySessionTotal + monthlyRecurringTotal;
 
   // High priority groceries
   const highPriorityItems = useMemo(() => {
@@ -95,7 +108,9 @@ function Dashboard() {
 
       {/* Active Session Card */}
       <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
-        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>Active Shopping Session</Text>
+        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
+          Active Shopping Session
+        </Text>
 
         {activeSession ? (
           <>
@@ -103,8 +118,11 @@ function Dashboard() {
               {boughtCount} / {totalCount} items purchased
             </Text>
 
-            <Text style={styles.cardAmount}>{currencies.find((c) => c.value === settings.currency)
-                  ?.symbol || "₹"} {sessionTotal.toFixed(2)}</Text>
+            <Text style={styles.cardAmount}>
+              {currencies.find((c) => c.value === settings.currency)?.symbol ||
+                "₹"}{" "}
+              {sessionTotal.toFixed(2)}
+            </Text>
 
             <TouchableOpacity
               style={styles.primaryButton}
@@ -118,7 +136,10 @@ function Dashboard() {
             <Text style={styles.cardText}>No active shopping session</Text>
 
             <TouchableOpacity
-              style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}
+              style={[
+                styles.primaryButton,
+                { backgroundColor: theme.colors.primary },
+              ]}
               onPress={() => navigation.navigate("HomeTab")}
             >
               <Text style={styles.primaryButtonText}>Start Shopping</Text>
@@ -127,23 +148,56 @@ function Dashboard() {
         )}
       </View>
 
+      <RecurringSection
+        recurringItems={recurringItems}
+        monthlyTotal={monthlyRecurringTotal}
+        currency={curr}
+        toggleSkipDate={toggleSkipDate}
+        theme={theme}
+      />
+
       {/* Monthly Overview */}
       <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
-        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>This Month</Text>
-        <Text style={[styles.cardAmount, { color: theme.colors.text }]}>{currencies.find((c) => c.value === settings.currency)
-                  ?.symbol || "₹"} {monthlyTotal.toFixed(2)}</Text>
+        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
+          Monthly Overview
+        </Text>
+        { monthlyTotal === 0 ? (
+          <Text style={[styles.cardText, { color: theme.colors.text }]}>
+            No expenses this month. Time to add some groceries! 🛒
+          </Text>
+        ) : (
+          <>
+            <Text style={[styles.cardAmount, { color: theme.colors.text }]}>
+              {currencies.find((c) => c.value === settings.currency)?.symbol || "₹"}{" "}
+              {monthlyTotal.toFixed(2)}
+            </Text>  
+            <Text
+              style={[styles.cardText, { color: theme.colors.text, fontSize: 11 }]}
+            >
+              {curr} {monthlySessionTotal.toFixed(2)} from shopping + {curr}{" "}
+              {monthlyRecurringTotal.toFixed(2)} from recurring expenses
+            </Text>
+            </>
+        )}
       </View>
 
       {/* High Priority Items */}
       <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
-        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>High Priority Items</Text>
+        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
+          High Priority Groceries
+        </Text>
 
         {highPriorityItems.length === 0 ? (
-          <Text style={[styles.cardText, { color: theme.colors.text }]}>No high priority items 🎉</Text>
+          <Text style={[styles.cardText, { color: theme.colors.text }]}>
+            No high priority items 🎉
+          </Text>
         ) : (
           highPriorityItems.map((item) => (
-            <Text key={item.id} style={[styles.listItem, { color: theme.colors.text }]}>
-              • {item.name}
+            <Text
+              key={item.id}
+              style={[styles.listItem, { color: theme.colors.text }]}
+            >
+              {item.name}
             </Text>
           ))
         )}
@@ -151,7 +205,9 @@ function Dashboard() {
 
       {/* Quick Actions */}
       <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
-        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>Quick Actions</Text>
+        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
+          Quick Actions
+        </Text>
 
         <TouchableOpacity
           style={styles.secondaryButton}
@@ -173,9 +229,9 @@ function Dashboard() {
       </View>
 
       {/* If no groceries */}
-      <View style={{marginBottom:30}}>
+      <View style={{ marginBottom: 30 }}>
         {groceryItems.length === 0 && (
-            <NotFoundItem>No grocery items found</NotFoundItem>
+          <NotFoundItem>No grocery items found</NotFoundItem>
         )}
       </View>
     </ScrollView>

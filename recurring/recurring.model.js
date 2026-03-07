@@ -1,10 +1,13 @@
+import { serverTimestamp } from "firebase/firestore";
+
 export const createRecurringModel = (data) => {
   return {
-    name: data.name?.trim() || "Untitled List",
+    groceryId: data.groceryId || null,
+    name: data.name?.trim() || "",
     pricePerUnit: data.pricePerUnit ?? 0,
-    unit: data.unit || "",
-    startDate: data.startDate ?? new Date(),
+    startDate: data.startDate || new Date().toISOString().split("T")[0],
     skippedDates: data.skippedDates || [],
     active: data.active ?? true,
-  }
+    updatedAt: serverTimestamp(),
+  };
 };
