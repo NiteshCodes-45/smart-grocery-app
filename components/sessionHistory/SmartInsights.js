@@ -6,6 +6,7 @@ export default function SmartInsights({
   toDate,
   sessionItems,
   completedSessions,
+  getSessionTotal,
   recurringItems,
 }) {
   const consistentItem = useMemo(() => {

@@ -189,6 +189,7 @@ export default function SessionHistoryScreen({ navigation }) {
         toDate={toDate}
         completedSessions={completedSessions}
         sessionItems={sessionItems}  
+        getSessionTotal={getSessionTotal}
         recurringItems={recurringItems}
       />
 

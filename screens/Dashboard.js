@@ -23,7 +23,6 @@ function Dashboard() {
   const { groceryItems, isSyncing } = useGrocery();
   const { activeSession, getActiveSessionItems, sessionItems } = useShopping();
   const { recurringItems, toggleSkipDate } = useRecurring();
-
   const isInitialLoading = isSettingsLoading || isSyncing;
 
   const curr = currencies.find((c) => c.value === settings?.currency)?.symbol || "₹";

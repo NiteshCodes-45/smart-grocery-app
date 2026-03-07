@@ -12,12 +12,6 @@ import {
 import { db } from "../firebase/firebaseConfig";
 import { useAuth } from "../store/auth-context";
 
-const priorityMap = {
-  high: 0,
-  medium: 1,
-  low: 2,
-};
-
 const RecurringContext = createContext();
 
 export function RecurringProvider({ children }) {
