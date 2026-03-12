@@ -3,20 +3,25 @@ import { View, Text, StyleSheet } from "react-native";
 export default function AboutSmartGrocery() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>About Smart Grocery</Text>
+      <Text style={styles.title}>Smart Grocery</Text>
 
       <Text style={styles.text}>
-        Smart Grocery helps you manage your daily grocery needs in a simple
-        and organized way.
+        Smart Grocery is a simple and practical app designed to help you manage
+        your everyday grocery shopping.
       </Text>
 
       <Text style={styles.text}>
-        You can create a master list of groceries, add items to your shopping
-        list, track prices, and keep a history of what you buy.
+        Create a master list of grocery items, add them to a shopping session,
+        track quantities and prices, and maintain a history of your purchases.
       </Text>
 
       <Text style={styles.text}>
-        Everything works offline and is designed for real household usage.
+        The app is designed to reflect real household shopping habits while
+        keeping the experience clean, fast, and easy to use.
+      </Text>
+
+      <Text style={styles.text}>
+        All data works locally, so the app can be used completely offline.
       </Text>
 
       <Text style={styles.footer}>
@@ -35,7 +40,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "700",
     color: "#1B4332",
     marginBottom: 12,

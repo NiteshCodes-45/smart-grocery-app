@@ -6,7 +6,13 @@ import {
   getAuth,
   connectAuthEmulator,
 } from "firebase/auth";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  connectFirestoreEmulator,
+} from "firebase/firestore";
+
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
 
 const firebaseConfig = {
@@ -21,52 +27,34 @@ const firebaseConfig = {
 if (!process.env.EXPO_PUBLIC_FIREBASE_API_KEY) {
   console.warn("Firebase config missing!");
 }
-console.log("🔥 ENV:", process.env.EXPO_PUBLIC_ENV);
-console.log("🔥 Firebase Project:", process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID);
+console.log("ENV:", process.env.EXPO_PUBLIC_ENV);
+console.log("Firebase Project:", process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID);
 
-// const app = initializeApp(firebaseConfig);
-// export const db = getFirestore(app);
-
-// export const auth = initializeAuth(app, {
-//   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
-// });
-
-// // AFTER auth & db are created
-// if (USE_EMULATOR) {
-//   console.log("🔥 Using Firebase Emulator");
-
-//   connectAuthEmulator(auth, "http://localhost:9099");
-//   connectFirestoreEmulator(db, "localhost", 8080);
-//   // connectAuthEmulator(auth, "http://192.168.1.6:9099");
-//   // connectFirestoreEmulator(db, "192.168.1.6", 8080);
-// }else {
-//   console.log("🌍 Using REAL Firebase");
-// }
-
-// ✅ App init (singleton-safe)
+//App init (singleton-safe)
 const app = getApps().length === 0
   ? initializeApp(firebaseConfig)
   : getApps()[0];
 
-// ✅ Auth MUST be initialized this way (NO getAuth)
+//Auth MUST be initialized this way (NO getAuth)
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 });
 
-// ✅ Firestore
-const db = getFirestore(app);
+//Firestore
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache(),
+});
 
-// ✅ Emulator switch (ONLY place with env logic)
+//Emulator switch (ONLY place with env logic)
 const USE_EMULATOR =
   process.env.EXPO_PUBLIC_USE_FIREBASE_EMULATOR === "true";
 
 if (__DEV__ && USE_EMULATOR) {
-  console.log("🔥 Firebase Emulator ENABLED");
-
+  console.log("Firebase Emulator ENABLED");
   connectAuthEmulator(auth, "http://localhost:9099");
   connectFirestoreEmulator(db, "localhost", 8080);
 } else {
-  console.log("🌍 Using LIVE Firebase");
+  console.log("Using LIVE Firebase");
 }
 
 export { auth, db };

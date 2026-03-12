@@ -4,7 +4,7 @@ import Buttons from "../components/Buttons";
 import { useAuth } from "../store/auth-context";
 import { useTheme } from "../store/theme-context";
 import { useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import ProfileSkeleton from "../components/skeletons/ProfileSkeleton";
 import { useNotification } from "../notifications/NotificationProvider";

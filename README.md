@@ -1,67 +1,109 @@
 # Smart Grocery App
 
-A smart grocery management app built with React Native + Expo, designed to handle real-world grocery shopping workflows like quantity tracking, dynamic pricing, shopping sessions, and purchase history.
+A practical grocery management app built with **React Native + Expo** that mimics real-world grocery shopping workflows.
 
-This app separates grocery master data from shopping sessions, making it scalable, reliable, and future-ready.
+The app separates **grocery master data** from **shopping sessions**, ensuring accurate price tracking, clean purchase history, and scalable architecture.
 
-✨ Key Features
+# Features
 ## Grocery Master
 
-Add, edit, and delete grocery items
-Assign category and unit (kg, pcs, litre, etc.)
-Acts as a reusable master catalog
+Create and maintain your grocery catalog.
 
-## Shopping Session
+- Add new grocery items
+- Edit or delete existing items
+- Assign category and measurement unit (kg, pcs, litre, etc.)
+- Reusable master list for all future shopping sessions
 
-Start a shopping session automatically
-Add selected groceries to an active session
-Adjust quantity using + / − controls
-Enter price per item (dynamic per session)
-Mark items as bought
-Prevent edits after item is marked bought
-Require all items to be bought before finishing session
+---
+
+## Shopping Sessions
+
+Track groceries purchased during a specific shopping trip.
+
+- Automatically create an active shopping session
+- Add items from grocery master
+- Adjust quantities using `+ / −` controls
+- Enter price per item for the current session
+- Mark items as **Bought**
+- Lock price and quantity once item is bought
+- Prevent session completion until all items are purchased
+
+---
 
 ## Session History
 
-View completed shopping sessions
-Each session stores:
-Date
-Total amount
-Purchased items
-Read-only session detail screen (no accidental edits)
+Keep a clean record of past purchases.
 
-## Architecture Overview
+Each completed session stores:
 
-The app is built around three clear layers:
+- Date of purchase
+- Total amount spent
+- List of purchased items
 
-1. Grocery Master (Static Data)
-What items exist? _ Milk, Rice, Onion, Mango…
+Completed sessions are **read-only**, preventing accidental edits.
 
-Name
-Category
-Unit
-Default quantity
+---
 
-2. Shopping Session (Transactional Data)
-What did I buy today?
+# Architecture Overview
 
-Session date
-Session status (ACTIVE / COMPLETED)
-Session total (derived)
+The app follows a simple and scalable data separation approach.
 
-3. Session Items (Per Purchase)
-Milk – 2 litre – ₹120 – Bought
+## 1. Grocery Master (Static Data)
 
-Quantity
-Price (changes per session)
-Bought state
+Defines available grocery items.
+
+Example: Milk, Rice, Onion, Mango
+
+
+Attributes:
+
+- Name
+- Category
+- Unit
+- Default quantity
+
+---
+
+## 2. Shopping Session (Transactional Data)
+
+Represents a single shopping trip.
+
+Data stored:
+
+- Session date
+- Session status (ACTIVE / COMPLETED)
+- Total cost
+
+---
+
+## 3. Session Items (Per Purchase)
+
+Tracks individual purchases inside a session.
+
+Example: Milk — 2 litre — ₹120 — Bought
+
+
+Attributes:
+
+- Quantity
+- Price
+- Bought status
+
+---
+
+## Why This Architecture?
+
 This separation ensures:
-No price overwrites
-Clean history
-Accurate totals
-Easy analytics later
 
-## Folder Structure (Simplified)
+- Prices never overwrite previous purchases
+- Clean historical records
+- Accurate total calculations
+- Easy future analytics
+
+---
+
+# Folder Structure
+
 /screens
   ├─ GroceryListScreen.js
   ├─ ShoppingListScreen.js
@@ -78,43 +120,58 @@ Easy analytics later
   ├─ Buttons.js
   └─ NotFoundItem.js
 
-## Data Integrity Rules
 
-Price must be added before marking item as bought
-Quantity & price are locked once bought
-Shopping session can only be completed when all items are bought
-Completed sessions are read-only
-These rules ensure the app behaves like a real-world expense tracker.
+---
 
-## Tech Stack
+# Data Integrity Rules
 
-React Native
-Expo
-Context API (state management)
-expo-crypto (UUID generation)
-React Navigation
+To maintain real-world behavior:
 
-## Getting Started
+- Price must be entered before marking an item as **Bought**
+- Quantity and price become **locked once purchased**
+- A shopping session can only finish when **all items are bought**
+- Completed sessions are **read-only**
+
+---
+
+# Tech Stack
+
+- React Native
+- Expo
+- React Navigation
+- Context API (State Management)
+- expo-crypto (UUID generation)
+
+---
+
+# Getting Started
+
 Install dependencies
 npm install
-Start the app
+Start the development server
 npx expo start
 
-If you face cache or state issues:
+If you face caching issues:
 npx expo start -c
 
-## Future Enhancements
 
-Firebase / Firestore persistence
-Monthly & category-wise expense reports
-Budget limits & alerts
-Price trend analysis
-Export / share shopping bills
+---
 
-## Author
+# Future Improvements
 
-Built as a real-world React Native practice project, focusing on:
+- Firebase / Firestore persistence
+- Monthly expense analytics
+- Category-wise spending reports
+- Budget alerts
+- Price trend tracking
+- Export or share grocery bills
 
-Clean architecture
-Correct state separation
-Production-grade UX rules
+---
+
+# Author
+
+This project was built as a **real-world React Native architecture practice project** focusing on:
+
+- Clean state management
+- Realistic UX rules
+- Scalable data structure

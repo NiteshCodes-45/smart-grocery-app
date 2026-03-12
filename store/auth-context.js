@@ -27,6 +27,7 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [userProfile, setUserProfile] = useState();
+  
   /* -------- Restore session (Firebase handles persistence) -------- */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -59,28 +60,33 @@ export function AuthProvider({ children }) {
       return { success: false, message: "Email & password required" };
     }
 
-    const cred = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-    if (name) {
-      await fbUpdateProfile(cred.user, { displayName: name });
+      if (name) {
+        await fbUpdateProfile(cred.user, { displayName: name });
+      }
+
+      if (cred.user) {
+        await setDoc(doc(db, "users", cred.user.uid), {
+          name,
+          email,
+          location,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        return { success: true };
+      }
+    } catch (err) {
+      if (err.code === "auth/email-already-in-use") {
+        return { success: false, message: "Email already in use" };  
+      }
+      return { success: false, message: err.message || "Signup error" };
     }
-
-    await setDoc(doc(db, "users", cred.user.uid), {
-      name,
-      email,
-      location,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-
-    return { success: true };
   }
 
   async function loginUser({ email, password }) {
+    
     if (!email || !password) {
       return { success: false, message: "Email & password required" };
     }
@@ -196,7 +202,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         currentUser,
-        userProfile, // ✅ ADD THIS
+        userProfile,
         isAuthenticated: !!currentUser,
         isSessionLoading,
 

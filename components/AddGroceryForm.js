@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Buttons from "./Buttons";
 import { useGrocery } from "../grocery/grocery-context";
@@ -11,19 +12,14 @@ import { seasons, UNITS, priorities, frequencies } from "../data/Constant";
 import { getUnitType } from "../data/Constant";
 import { useNotification } from "../notifications/NotificationProvider";
 
-function AddGroceryForm({
-  categories,
-  route,
-  navigation,
-  isEditMode,
-}) {
+function AddGroceryForm({ categories, route, navigation, isEditMode }) {
   const [name, setName] = useState("");
   const [qty, setQty] = useState("1");
   const [unit, setUnit] = useState("pcs");
   const [category, setCategory] = useState("");
   const [season, setSeason] = useState("");
   const [priority, setPriority] = useState("");
-  const [frequency, setFrequency] = useState(""); 
+  const [frequency, setFrequency] = useState("");
   const [dailyPrice, setDailyPrice] = useState("");
   const { groceryItems } = useGrocery();
   const { settings } = useSettings();
@@ -32,11 +28,11 @@ function AddGroceryForm({
 
   //get itemId while in edit mode
   const itemId = isEditMode ? route.params.itemId : null;
-  
+
   useEffect(() => {
     if (!isEditMode || !itemId) return;
 
-    const itemToEdit = groceryItems.find(item => item.id === itemId);
+    const itemToEdit = groceryItems.find((item) => item.id === itemId);
     if (!itemToEdit) return;
 
     const unitType = itemToEdit.unitType || getUnitType(itemToEdit.unit);
@@ -47,12 +43,14 @@ function AddGroceryForm({
     setSeason(itemToEdit.season ?? "all");
     setPriority((itemToEdit.priority ?? "medium").toLowerCase());
     setFrequency((itemToEdit.frequency ?? "occasionally").toLowerCase());
-    setDailyPrice(itemToEdit.pricePerUnit ? itemToEdit.pricePerUnit.toString() : "");
+    setDailyPrice(
+      itemToEdit.pricePerUnit ? itemToEdit.pricePerUnit.toString() : "",
+    );
   }, [isEditMode, itemId, groceryItems]);
-  
+
   const { addGroceryItem, updateGroceryItem } = useGrocery();
 
-  function saveGroceryHandler() {
+  async function saveGroceryHandler() {
     if (name.trim().length === 0) {
       notify.info("Please enter a grocery item name.");
       return;
@@ -71,13 +69,21 @@ function AddGroceryForm({
 
     if (isEditMode && itemId) {
       updateGroceryItem(itemId, groceryData);
-      notify.success('Grocery updated!');
+      notify.success("Grocery updated!");
       navigation.goBack();
     } else {
-      addGroceryItem(groceryData);
-      notify.success('Grocery added!');
-      navigation.goBack();
-      
+      try {
+        const result = await addGroceryItem(groceryData);
+        if (!result.success) {
+          notify.error(result.message);
+          return;
+        }
+        notify.success("Grocery added!");
+        navigation.goBack();
+      } catch (error) {
+        notify.error("An error occurred while adding the grocery item.");
+        return;
+      }
       // clear only after ADD
       setName("");
       setQty("1");
@@ -91,7 +97,11 @@ function AddGroceryForm({
   }
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+    <KeyboardAwareScrollView
+      enableOnAndroid
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={styles.content}
+    >
       <SafeAreaProvider style={styles.centeredView}>
         <View
           style={[
@@ -169,7 +179,7 @@ function AddGroceryForm({
               />
             </View>
           </View>
-          { frequency === "daily" && (
+          {frequency === "daily" && (
             <View style={styles.selectContainer}>
               <View style={styles.dropdownWrapper}>
                 <InputRow
@@ -191,10 +201,15 @@ function AddGroceryForm({
           </View>
         </View>
       </SafeAreaProvider>
-      </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 const styles = StyleSheet.create({
+  content: {
+    flexGrow: 1,
+    paddingBottom: 48,
+    marginBottom: 40,
+  },
   centeredView: {
     flex: 1,
     justifyContent: "center",

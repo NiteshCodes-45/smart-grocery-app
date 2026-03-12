@@ -79,6 +79,7 @@ function Signup() {
     setUserName("");
     setEmail("");
     setPassword("");
+    setConfirmPassword("");
     setLocation("");
   }
 

@@ -46,7 +46,7 @@ export default function Settings() {
 
   return (
     <ScrollView style={[styles.container, {backgroundColor:theme.colors.background}]}>
-      <View style={{marginBottom:20}}>
+      <View style={{marginBottom:60}}>
       {/* Grocery Defaults */}
       <Section title="Grocery Defaults">
         <PickerRow

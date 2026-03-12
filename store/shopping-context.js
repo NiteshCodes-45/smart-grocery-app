@@ -211,10 +211,21 @@ export function ShoppingProvider({ children }) {
 
   function getActiveSessionItems() {
     if (!activeSession) return [];
-    return sessionItems.filter(
-      (item) =>
-        item.sessionId === activeSession.id
-    );
+
+    return sessionItems
+      .filter((i) => i.sessionId === activeSession.id)
+      .sort((a, b) => {
+        // Rule 1: Bought items go to bottom
+        if (a.isBought !== b.isBought) {
+          return a.isBought ? 1 : -1;
+        }
+
+        // // Rule 2: Sort by latest updated first
+        // const aDate = a.updatedAt?.toDate?.()?.getTime?.() || 0;
+        // const bDate = b.updatedAt?.toDate?.()?.getTime?.() || 0;
+
+        // return bDate - aDate;
+      });
   }
 
   function getSessionTotal(sessionId) {

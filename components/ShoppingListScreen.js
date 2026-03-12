@@ -19,6 +19,7 @@ import { currencies } from "../data/Constant";
 import { getUnitType } from "../data/Constant";
 import ShoppingListSkeleton from "./skeletons/ShoppingListSkeleton";
 import { useNotification } from "../notifications/NotificationProvider";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 export default function ShoppingListScreen() {
   const { theme } = useTheme();
@@ -32,7 +33,7 @@ export default function ShoppingListScreen() {
     completeSession,
     getSessionTotal,
     removeItem,
-    isLoadingSession
+    isLoadingSession,
   } = useShopping();
 
   const { settings, isSettingsLoading } = useSettings();
@@ -42,15 +43,11 @@ export default function ShoppingListScreen() {
 
   // Auth guard
   if (!currentUser?.uid) {
-    return (
-      <NotFoundItem>
-        Session expired. Please login again.
-      </NotFoundItem>
-    );
+    return <NotFoundItem>Session expired. Please login again.</NotFoundItem>;
   }
 
-  if (isLoadingSession && !activeSession) {
-    return <ShoppingListSkeleton />
+  if (isLoadingSession && !activeSession && !isSettingsLoading) {
+    return <ShoppingListSkeleton />;
   }
 
   // // Waiting for Firestore
@@ -64,11 +61,7 @@ export default function ShoppingListScreen() {
 
   // No active session
   if (!activeSession) {
-    return (
-      <NotFoundItem>
-        No active shopping session
-      </NotFoundItem>
-    );
+    return <NotFoundItem>No active shopping session</NotFoundItem>;
   }
 
   const items = getActiveSessionItems();
@@ -82,9 +75,17 @@ export default function ShoppingListScreen() {
     );
   }
 
+  function updatePriceHandler(itemId, val) {
+    // Allow only numbers and decimal point
+    const regex = /^\d*\.?\d*$/;
+    if (regex.test(val) || val === "") {
+      updatePrice(itemId, val);
+    }
+  }
+
   function finishShopping() {
     if (!activeSession) {
-      notify.info("No active session. Please start a shopping session first.")
+      notify.info("No active session. Please start a shopping session first.");
       return;
     }
 
@@ -97,13 +98,15 @@ export default function ShoppingListScreen() {
     const unboughtItems = items.filter((item) => !item.isBought);
 
     if (unboughtItems.length > 0) {
-      notify.info(`Unbought Items, ${unboughtItems.length} item(s) are still not marked as bought.`);
+      notify.info(
+        `Unbought Items, ${unboughtItems.length} item(s) are still not marked as bought.`,
+      );
       return;
     }
 
     completeSession(activeSession.id);
     Alert.alert("Done", "Shopping session completed ✅", [
-      { text: "OK", onPress: () => startSession() }
+      { text: "OK", onPress: () => startSession() },
     ]);
   }
 
@@ -128,7 +131,9 @@ export default function ShoppingListScreen() {
     const price = Number(item.price);
 
     if (!item.isBought && (!price || price <= 0)) {
-      notify.error("Price Required, Please enter a valid price before marking as bought.");
+      notify.error(
+        "Price Required, Please enter a valid price before marking as bought.",
+      );
       return;
     }
 
@@ -176,14 +181,14 @@ export default function ShoppingListScreen() {
               </View>
 
               {/* {(item.unitType || getUnitType(item.unit)) === "COUNT" ? ( */}
-                <QuantityButtons
-                  qty={item.qty}
-                  unit={item.unit}
-                  unitType={item.unitType || getUnitType(item.unit)}
-                  disabled={item.isBought}
-                  onIncrease={() => updateQuantity(item.id, "inc")}
-                  onDecrease={() => updateQuantity(item.id, "dec")}
-                />
+              <QuantityButtons
+                qty={item.qty}
+                unit={item.unit}
+                unitType={item.unitType || getUnitType(item.unit)}
+                disabled={item.isBought}
+                onIncrease={() => updateQuantity(item.id, "inc")}
+                onDecrease={() => updateQuantity(item.id, "dec")}
+              />
               {/* // ) : (
               //   <>
               //     <Pressable onPress={() => setPickerItemId(item.id)}>
@@ -211,8 +216,8 @@ export default function ShoppingListScreen() {
                   ?.symbol || "₹"}
               </Text>
               <TextInput
-                value={item.price}
-                onChangeText={(val) => updatePrice(item.id, val)}
+                value={item.price ? String(item.price) : ""}
+                onChangeText={(val) => updatePriceHandler(item.id, val)}
                 keyboardType="numeric"
                 placeholder="Enter price"
                 editable={!item.isBought}
@@ -238,7 +243,7 @@ export default function ShoppingListScreen() {
         <Text style={[styles.total, { color: theme.colors.text }]}>
           Total:{" "}
           {currencies.find((c) => c.value === settings.currency)?.symbol || "₹"}{" "}
-          {total}
+          {total.toFixed(2)}
         </Text>
 
         <Pressable style={styles.finishBtn} onPress={finishShopping}>
@@ -250,6 +255,10 @@ export default function ShoppingListScreen() {
 }
 
 const styles = StyleSheet.create({
+  content: {
+    paddingBottom: 20,
+    flexGrow: 1,
+  },
   card: {
     marginHorizontal: 20,
     marginTop: 10,

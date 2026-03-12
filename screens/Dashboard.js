@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useGrocery } from "../grocery/grocery-context";
 import { useShopping } from "../store/shopping-context";

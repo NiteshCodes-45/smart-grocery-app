@@ -51,6 +51,15 @@ export function GroceryContextProvider({ children }) {
 
   async function addGroceryItem(item) {
     if (!currentUser?.uid) return;
+
+    const duplicate = groceryItems.find((i) => 
+      i.name.toLowerCase().trim() === item.name.toLowerCase().trim() && i.category === item.category
+    );
+
+    if (duplicate) {
+      return { success: false, message: "Item already exists in the same category" };
+    }
+
     try{
       const model = createGroceryModel(item);
       const groceryId = await addGrocery(currentUser.uid, model);
@@ -58,7 +67,7 @@ export function GroceryContextProvider({ children }) {
         await createRecurringFromGrocery(model, groceryId);
       }
     } catch (error) {
-      console.error("Error adding grocery item:", error);
+      return { success: false, message: "Failed to add item" };
     }
   }
 

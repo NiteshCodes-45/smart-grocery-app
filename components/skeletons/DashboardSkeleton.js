@@ -16,6 +16,11 @@ export default function DashboardSkeleton() {
           style={[styles.button, { backgroundColor: theme.colors.skeletonHighlight }]}
         />
       </View>
+
+      <View style={[styles.semiContainer, { backgroundColor: theme.colors.skeletonBase }]}>
+        <View style={[styles.line, { backgroundColor: theme.colors.skeletonHighlight }]} />
+        <View style={[styles.line, { backgroundColor: theme.colors.skeletonHighlight }]} />
+      </View>
       
       <View style={[styles.semiContainer, { backgroundColor: theme.colors.skeletonBase }]}>
         <View style={[styles.line, { backgroundColor: theme.colors.skeletonHighlight }]} />
