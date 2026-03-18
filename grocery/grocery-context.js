@@ -64,8 +64,15 @@ export function GroceryContextProvider({ children }) {
       const model = createGroceryModel(item);
       const groceryId = await addGrocery(currentUser.uid, model);
       if(groceryId && model.frequency === "daily"){
-        await createRecurringFromGrocery(model, groceryId);
+        try {
+          await createRecurringFromGrocery(model, groceryId);
+        } catch (err) {
+          console.log("Recurring creation failed", err);
+        }
       }
+      
+      return { success: true };
+
     } catch (error) {
       return { success: false, message: "Failed to add item" };
     }

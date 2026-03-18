@@ -219,13 +219,13 @@ export function ShoppingProvider({ children }) {
         if (a.isBought !== b.isBought) {
           return a.isBought ? 1 : -1;
         }
-
-        // // Rule 2: Sort by latest updated first
-        // const aDate = a.updatedAt?.toDate?.()?.getTime?.() || 0;
-        // const bDate = b.updatedAt?.toDate?.()?.getTime?.() || 0;
-
-        // return bDate - aDate;
       });
+  }
+
+  function getEachGrocerySessionData(groceryName) {
+    const data = sessionItems
+      .filter((i) => i.name === groceryName && i.price);
+    return data;
   }
 
   function getSessionTotal(sessionId) {
@@ -264,6 +264,7 @@ export function ShoppingProvider({ children }) {
         getActiveSessionItems,
         getSessionTotal,
         isItemInActiveSession,
+        getEachGrocerySessionData,
 
         isLoadingSession,
       }}

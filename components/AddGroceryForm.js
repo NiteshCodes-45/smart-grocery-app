@@ -64,7 +64,7 @@ function AddGroceryForm({ categories, route, navigation, isEditMode }) {
       season,
       priority: priority.toLowerCase(),
       frequency: frequency.toLowerCase(),
-      dailyPrice: frequency === "daily" ? Number(dailyPrice) || 0 : undefined,
+      dailyPrice: frequency === "daily" ? Number(dailyPrice) : null,
     };
 
     if (isEditMode && itemId) {
@@ -74,10 +74,12 @@ function AddGroceryForm({ categories, route, navigation, isEditMode }) {
     } else {
       try {
         const result = await addGroceryItem(groceryData);
-        if (!result.success) {
-          notify.error(result.message);
+        
+        if (!result?.success) {
+          notify.error(result?.message || "Failed to add grocery");
           return;
         }
+
         notify.success("Grocery added!");
         navigation.goBack();
       } catch (error) {

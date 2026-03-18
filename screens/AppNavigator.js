@@ -9,6 +9,7 @@ import AboutSmartGrocery from "../components/settings/AboutSmartGrocery";
 import AddGroceryForm from "../components/AddGroceryForm";
 import Settings from "./Settings";
 import HeroSection from "../components/landingPages/HeroSection";
+import EachGrocerySessionDetailScreen from "../components/sessionHistory/EachGrocerySessionDetailScreen";
 import Register from "../components/landingPages/Signup";
 import LandingScreen from "./LandingScreen";
 
@@ -100,6 +101,8 @@ function AppNavigator() {
             name="Session Details"
             component={SessionDetailScreen}
           />
+
+          <Stack.Screen name="Grocery Session Details" component={EachGrocerySessionDetailScreen} />
 
           <Stack.Screen name="About" component={AboutSmartGrocery} />
         </>

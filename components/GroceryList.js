@@ -26,7 +26,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
   const { isOnline } = useNetwork();
   const { isSettingsLoading } = useSettings();
   const { removeGroceryItem, isSyncing } = useGrocery();
-  const { addItemToSession, isItemInActiveSession } = useShopping();
+  const { addItemToSession, isItemInActiveSession, getEachGrocerySessionData } = useShopping();
   const navigation = useNavigation();
   const { currentUser } = useAuth();
   const notify = useNotification();
@@ -133,6 +133,18 @@ export default function GroceryListScreen({ groceryItems, categories }) {
 
   if (isInitialLoading) {
     return <GroceryListSkeleton />;
+  }  
+
+  function getSessionDetailsHandler(groceryName) {
+    const data = getEachGrocerySessionData(groceryName);
+    if (data.length === 0) {
+      notify.info("This item is not added in any shopping session yet.");
+      return;
+    }
+    navigation.navigate("Grocery Session Details", {
+      groceryName,
+      data,
+    });
   }
 
   return (
@@ -154,7 +166,25 @@ export default function GroceryListScreen({ groceryItems, categories }) {
             <View style={[styles.item, { backgroundColor: theme.colors.card }]}>
               <View style={styles.left}>
                 <View>
-                  <Text style={{ color: theme.colors.text, fontWeight:600, fontSize:14 }}>{item.name}</Text>
+                  <Pressable
+                    onPress={() => getSessionDetailsHandler(item.name)}
+                  >
+                    <Text
+                      style={{
+                        color: theme.colors.text,
+                        fontWeight: 600,
+                        fontSize: 18,
+                      }}
+                    >
+                      {item.name}{" "}
+                      <Ionicons
+                        name="chevron-down-outline"
+                        size={20}
+                        color={theme.colors.text}
+                        style={styles.sessionDownArrow}
+                      />
+                    </Text>
+                  </Pressable>
                   <Text
                     style={{
                       color: theme.colors.text,
@@ -186,7 +216,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
                       isItemInActiveSession(item.id) ? "#4CAF50" : "#4CAF50"
                     }
                   />
-                  <Text style={[styles.addText, {color: theme.colors.text}]}>
+                  <Text style={[styles.addText, { color: theme.colors.text }]}>
                     {isItemInActiveSession(item.id) ? "Added" : "Add"}
                   </Text>
                 </Pressable>
@@ -204,7 +234,7 @@ export default function GroceryListScreen({ groceryItems, categories }) {
           </Swipeable>
         )}
         ListHeaderComponent={
-          <FilterGrocery 
+          <FilterGrocery
             theme={theme}
             categories={categories}
             category={category}
@@ -296,4 +326,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 1,
   },
+  sessionDownArrow: {
+    marginLeft: 20,
+    marginTop: 2,
+    color: "#aaa",
+    fontWeight: "bold",
+  }
 });
