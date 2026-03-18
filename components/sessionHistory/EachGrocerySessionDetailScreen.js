@@ -14,30 +14,31 @@ export default function EachGrocerySessionDetailScreen({ route }) {
     currencies.find((c) => c.value === settings.currency)?.symbol || "₹";
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <ScrollView style={{ flex: 1, marginBottom: 20 }}> 
       <View style={{ padding: 20 }}>
         <View
           style={[
-            styles.card,
-            { flexDirection: "row", justifyContent: "space-between" },
+            styles.card, {alignItems: "center"}
           ]}
         >
           <Text style={styles.cardTitle}>{groceryName} - Session Details</Text>
-          <Text style={styles.cardTitle}>
-            Total Price: {currencySymbol} {totalPrice}
-          </Text>
         </View>
+        <Text style={styles.cardTitle}>
+            Total Spent: {currencySymbol}{totalPrice}
+        </Text>
         {data.map((item, index) => (
           <View key={index} style={styles.card}>
             <Text style={styles.cardText}>
               Session Date:{" "}
               {new Date(item.updatedAt.seconds * 1000).toLocaleDateString()}
             </Text>
-            <Text>
+            <Text style={styles.cardText}>
               Price: {currencySymbol}
               {item.price}
             </Text>
-            <Text>Qty: {item.qty}</Text>
+            <Text style={styles.cardText}>
+              Qty: {item.qty}{" "}{item.unit}
+            </Text>
           </View>
         ))}
       </View>
@@ -52,12 +53,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     elevation: 3,
-    itemsAlign: "center",
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   cardText: {
     fontSize: 14,

@@ -173,13 +173,13 @@ export default function GroceryListScreen({ groceryItems, categories }) {
                       style={{
                         color: theme.colors.text,
                         fontWeight: 600,
-                        fontSize: 18,
+                        fontSize: 16,
                       }}
                     >
                       {item.name}{" "}
                       <Ionicons
                         name="chevron-down-outline"
-                        size={20}
+                        size={16}
                         color={theme.colors.text}
                         style={styles.sessionDownArrow}
                       />
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   },
   sessionDownArrow: {
     marginLeft: 20,
-    marginTop: 2,
+    marginTop: 5,
     color: "#aaa",
     fontWeight: "bold",
   }
